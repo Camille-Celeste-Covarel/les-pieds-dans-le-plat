@@ -34,7 +34,7 @@ function AppContent() {
         <div className="app-container">
             <Header />
             <main className="main-content">
-                {shouldShowOverlay && <Overlay title="">{routeContent}</Overlay>}
+                {shouldShowOverlay && <Overlay>{routeContent}</Overlay>}
             </main>
             {(shouldShowFullPage || shouldShowMobilePage) && (
                 <div className="main-page-container">{routeContent}</div>
