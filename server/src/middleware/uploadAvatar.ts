@@ -1,25 +1,27 @@
 import path from "node:path";
 import type { Request } from "express";
 import multer from "multer";
+import { v4 as uuidv4 } from "uuid";
 
-const profilUpload = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (file.fieldname === "avatar") {
-      cb(null, "uploads/avatars/");
-    } else if (file.fieldname === "vehicle_photo") {
-      cb(null, "uploads/vehicle_photos/");
-    } else {
-      cb(null, "uploads/");
-    }
+const avatarStorage = multer.diskStorage({
+  destination: (
+    req: Request,
+    file: Express.Multer.File,
+    cb: (error: Error | null, destination: string) => void,
+  ) => {
+    // Le chemin est maintenant fixe et pointe directement vers le dossier des avatars
+    const destinationPath = path.join(__dirname, "..", "..", "uploads", "avatars");
+    cb(null, destinationPath);
   },
-  filename: (req: Request, file: Express.Multer.File, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const extension = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${extension}`);
+  filename: (
+    req: Request,
+    file: Express.Multer.File,
+    cb: (error: Error | null, filename: string) => void,
+  ) => {
+    const uniqueFilename = `${uuidv4()}${path.extname(file.originalname)}`;
+    cb(null, uniqueFilename);
   },
 });
-const upload = multer({ storage: profilUpload });
-const multiUpload = multer({ storage: profilUpload });
 
 const imageFileFilter = (
   req: Request,
@@ -29,12 +31,12 @@ const imageFileFilter = (
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error("Le fichier n'est pas une image !"));
+    cb(new Error("Le fichier envoyé n'est pas une image !"));
   }
 };
 
 const uploadAvatar = multer({
-  storage: profilUpload,
+  storage: avatarStorage,
   fileFilter: imageFileFilter,
   limits: {
     fileSize: 1024 * 1024 * 5,

@@ -1,17 +1,22 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// @ts-ignore
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import LandingPage from "./pages/LandingPage.tsx";
+import LeMur from "./pages/LeMur.tsx";
 import LoginPage from "./pages/LoginPage";
+import ProfilePage from "./pages/ProfilePage.tsx";
 import RegisterPage from "./pages/RegisterPage";
+import Regles from "./pages/Regles.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import AdminRoute from "./utils/AdminRoute.tsx";
-// @ts-ignore
 import ProtectedRoute from "./utils/ProtectedRoute";
+import ExprimezVous from "./pages/ExprimezVous.tsx";
+import Concept from "./pages/Concept.tsx";
 
 const router = createBrowserRouter([
   {
@@ -19,7 +24,27 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <App />,
+        element: <LandingPage />,
+      },
+      {
+        path: "/le-mur",
+        element: <LeMur />,
+      },
+      {
+        path: "/les-regles-du-jeu",
+        element: <Regles />,
+      },
+      {
+        path: "/Regles",
+        element: <Regles />,
+      },
+      {
+        path: "/exprimez-vous",
+        element: <ExprimezVous />,
+      },
+      {
+        path: "/le-concept",
+        element: <Concept />,
       },
       {
         path: "/login",
@@ -32,26 +57,37 @@ const router = createBrowserRouter([
         handle: { isOverlay: true },
       },
       {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+        handle: { isOverlay: true },
+      },
+      {
+        path: "/reset-password",
+        element: <ResetPassword />,
+        handle: { isOverlay: true },
+      },
+      {
         path: "/admin/dashboard",
         element: (
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
         ),
         handle: { isOverlay: true },
       },
-      /*      {
-        path: "/exemple",
+      {
+        path: "/profil",
         element: (
-          <ProtectedRoute>
-            <Exemple />
-          </ProtectedRoute>
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
         ),
-        handle: { isOverlay: true }, // if it doesn't use, delete this
-      },*/
+        handle: { isOverlay: true },
+      },
     ],
   },
 ]);
+
 
 const rootElement = document.getElementById("root");
 if (rootElement == null) {

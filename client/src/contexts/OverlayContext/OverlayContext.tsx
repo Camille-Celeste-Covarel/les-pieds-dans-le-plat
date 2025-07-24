@@ -11,7 +11,7 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   const closeOverlay = useCallback(() => {
-    navigate("/");
+    navigate(-1);
   }, [navigate]);
 
   const value = { closeOverlay };

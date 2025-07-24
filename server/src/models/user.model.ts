@@ -9,17 +9,9 @@ export class User
   implements UserAttributes
 {
   public id!: string;
-  public first_name!: string;
-  public last_name!: string;
   public email!: string;
-  public gender?: "Femme" | "Homme" | "Autre";
-  public birthdate!: Date;
-  public address!: string;
-  public address_bis?: string;
-  public city!: string;
-  public postcode!: string;
-  public country!: string;
   public password!: string;
+  public public_name!: string;
   public avatar_url?: string;
   public is_admin!: boolean;
   public reset_token?: string | null;
@@ -37,50 +29,22 @@ export class User
           primaryKey: true,
           allowNull: false,
         },
-        first_name: {
-          type: DataTypes.STRING(255),
-          allowNull: false,
-        },
-        last_name: {
-          type: DataTypes.STRING(255),
-          allowNull: false,
-        },
         email: {
           type: DataTypes.STRING(255),
           allowNull: false,
           unique: true,
-        },
-        gender: {
-          type: DataTypes.ENUM("Femme", "Homme", "Autre"),
-          allowNull: true,
-        },
-        birthdate: {
-          type: DataTypes.DATE,
-          allowNull: false,
-        },
-        address: {
-          type: DataTypes.STRING(255),
-          allowNull: false,
-        },
-        address_bis: {
-          type: DataTypes.STRING(255),
-          allowNull: true,
-        },
-        city: {
-          type: DataTypes.STRING(255),
-          allowNull: false,
-        },
-        postcode: {
-          type: DataTypes.STRING(255),
-          allowNull: false,
-        },
-        country: {
-          type: DataTypes.STRING(255),
-          allowNull: false,
+          validate: {
+            isEmail: true,
+          },
         },
         password: {
-          type: DataTypes.STRING(255),
+          type: DataTypes.STRING(100),
           allowNull: false,
+        },
+        public_name: {
+          type: DataTypes.STRING (255 ),
+          allowNull: false,
+          unique: true,
         },
         avatar_url: {
           type: DataTypes.STRING(255),
@@ -102,7 +66,7 @@ export class User
       },
       {
         sequelize,
-        tableName: "user",
+        tableName: "users",
         timestamps: true,
         underscored: true,
         modelName: "User",
@@ -113,20 +77,8 @@ export class User
             name: "idx_user_email_unique",
           },
           {
-            fields: ["last_name", "first_name"],
-            name: "idx_user_last_first_name",
-          },
-          {
-            fields: ["city"],
-            name: "idx_user_city",
-          },
-          {
-            fields: ["postcode"],
-            name: "idx_user_postcode",
-          },
-          {
-            fields: ["country"],
-            name: "idx_user_country",
+            fields: ["public_name"],
+            name: "idx_user_public_name",
           },
           {
             fields: ["is_admin"],
@@ -137,5 +89,11 @@ export class User
     );
   }
 
-  static associate(sequelize: Sequelize) {}
+  // L'association est la clé pour lier les données !
+  static associate(sequelize: Sequelize) {
+    User.hasMany(sequelize.models.Posts, {
+      foreignKey: "user_id",
+      as: "posts",
+    });
+  }
 }

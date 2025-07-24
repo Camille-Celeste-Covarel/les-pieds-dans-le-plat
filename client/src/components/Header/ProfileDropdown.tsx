@@ -61,7 +61,7 @@ export function ProfileDropdown() {
         <div className="dropdown-menu">
           {isAuthenticated && user ? (
             <>
-              <p className="dropdown-greeting">Bonjour, {user.firstName}</p>
+              <p className="dropdown-greeting">Bonjour, {user.public_name}</p>
               <hr className="dropdown-divider" />
               <Link
                 to="/profil"

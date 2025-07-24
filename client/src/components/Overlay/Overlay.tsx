@@ -5,7 +5,6 @@ export function Overlay({
   children,
 }: {
   children: ReactNode;
-  title: string;
 }) {
   const { closeOverlay } = useOverlay();
   const [isAnimatingOpen, setIsAnimatingOpen] = useState(false);
@@ -32,7 +31,6 @@ export function Overlay({
   return (
     <div
       className={`station-details-overlay ${isAnimatingOpen ? "open" : ""}`}
-      aria-labelledby="overlay-title"
     >
       <button
         type="button"

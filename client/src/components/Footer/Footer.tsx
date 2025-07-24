@@ -1,15 +1,14 @@
-import "./Footer.css";
-
 import { isMobile } from "react-device-detect";
 import {
-  FaCalendarCheck,
-  FaEnvelope,
-  FaInfoCircle,
-  FaMapMarkedAlt,
+  FaBook,
+  FaComments,
+  FaLightbulb,
   FaUserShield,
 } from "react-icons/fa";
+import { TbSpeakerphone } from "react-icons/tb";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import "./Footer.css";
 
 function Footer() {
   const navigate = useNavigate();
@@ -17,21 +16,21 @@ function Footer() {
   const iconSize = 35;
 
   const navItems = [
-    { path: "/", title: "Carte", icon: <FaMapMarkedAlt size={iconSize} /> },
+    { path: "/le-mur", title: "Le Mur", icon: <TbSpeakerphone size={iconSize} /> },
     {
-      path: "/reservations",
-      title: "Mes réservations",
-      icon: <FaCalendarCheck size={iconSize} />,
+      path: "/les-regles-du-jeu",
+      title: "Les Règles du Jeu",
+      icon: <FaBook size={iconSize} />,
     },
     {
-      path: "/contact",
-      title: "Nous contacter",
-      icon: <FaEnvelope size={iconSize} />,
+      path: "/exprimez-vous",
+      title: "Exprimez-vous",
+      icon: <FaComments size={iconSize} />,
     },
     {
-      path: "/informations",
-      title: "Informations",
-      icon: <FaInfoCircle size={iconSize} />,
+      path: "/le-concept",
+      title: "Le Concept",
+      icon: <FaLightbulb size={iconSize} />,
     },
   ];
 

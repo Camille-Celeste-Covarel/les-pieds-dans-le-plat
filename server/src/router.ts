@@ -18,10 +18,7 @@ router.use(express.static(path.join(__dirname, "..", "public")));
 router.post("/auth/login", userActions.login);
 router.post(
   "/auth/register",
-  uploadAvatar.fields([
-    { name: "avatar", maxCount: 1 },
-    { name: "vehicle_photo", maxCount: 1 },
-  ]),
+  uploadAvatar.fields([{ name: "avatar", maxCount: 1 }]),
   userActions.register,
 );
 
@@ -42,8 +39,11 @@ router.use(authenticateToken);
 
 // Route pour les users
 router.get("/users/me", userActions.getMe);
-
-// Route pour récupérer son propre profil (exemple)
+router.patch(
+  "/users/me/avatar",
+  uploadAvatar.single("avatar"),
+  userActions.updateAvatar,
+);
 
 /* ************************************************************************* */
 // 👑 Wall d'administration - Tout ce qui suit nécessite d'être Admin

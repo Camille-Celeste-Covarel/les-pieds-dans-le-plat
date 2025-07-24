@@ -11,47 +11,47 @@ import "./stylesheets/App.css";
 import "./stylesheets/normalize.css";
 
 interface RouteHandle {
-  isOverlay?: boolean;
+    isOverlay?: boolean;
 }
 
 function AppContent() {
-  const matches = useMatches();
-  const location = useLocation();
+    const matches = useMatches();
+    const location = useLocation();
 
-  const isOverlayRoute = matches.some(
-    (match) => (match.handle as RouteHandle)?.isOverlay,
-  );
-  const isRootPath = location.pathname === "/";
+    const isOverlayRoute = matches.some(
+        (match) => (match.handle as RouteHandle)?.isOverlay,
+    );
+    const isRootPath = location.pathname === "/";
 
-  // --- Logique d'affichage ---
-  const shouldShowOverlay = !isMobile && isOverlayRoute;
-  const shouldShowFullPage = !isRootPath && !isOverlayRoute;
-  const shouldShowMobilePage = isMobile && !isRootPath;
+    // --- Logique d'affichage ---
+    const shouldShowOverlay = !isMobile && isOverlayRoute;
+    const shouldShowFullPage = !isRootPath && !isOverlayRoute;
+    const shouldShowMobilePage = isMobile && !isRootPath;
 
-  const routeContent = <Outlet />;
+    const routeContent = <Outlet />;
 
-  return (
-    <div className="app-container">
-      <Header />
-      <main className="main-content">
-        {shouldShowOverlay && <Overlay title="">{routeContent}</Overlay>}
-      </main>
-      {(shouldShowFullPage || shouldShowMobilePage) && (
-        <div className="main-page-container">{routeContent}</div>
-      )}
-      <Footer />
-    </div>
-  );
+    return (
+        <div className="app-container">
+            <Header />
+            <main className="main-content">
+                {shouldShowOverlay && <Overlay title="">{routeContent}</Overlay>}
+            </main>
+            {(shouldShowFullPage || shouldShowMobilePage) && (
+                <div className="main-page-container">{routeContent}</div>
+            )}
+            <Footer />
+        </div>
+    );
 }
 
 function App() {
-  return (
-    <AuthProvider>
-      <OverlayProvider>
-        <AppContent />
-      </OverlayProvider>
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <OverlayProvider>
+                <AppContent />
+            </OverlayProvider>
+        </AuthProvider>
+    );
 }
 
 export default App;

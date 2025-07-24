@@ -1,6 +1,6 @@
 import type { Optional } from "sequelize";
 
-export interface ExempleAttributes {
+/*export interface ExempleAttributes {
   id: string;
   Exemplebis: string;
   createdAt?: Date;
@@ -9,21 +9,13 @@ export interface ExempleAttributes {
 export type ExempleCreationAttributes = Optional<
   ExempleAttributes,
   "id" | "createdAt" | "updatedAt"
->;
+>;*/
 
 export interface UserAttributes {
   id: string;
-  first_name: string;
-  last_name: string;
   email: string;
-  gender?: "Femme" | "Homme" | "Autre";
-  birthdate: Date;
-  address: string;
-  address_bis?: string;
-  city: string;
-  postcode: string;
-  country: string;
   password: string;
+  public_name: string;
   avatar_url?: string;
   is_admin: boolean;
   createdAt?: Date;
@@ -36,8 +28,46 @@ export type UserCreationAttributes = Optional<
   | "id"
   | "avatar_url"
   | "is_admin"
-  | "gender"
-  | "address_bis"
   | "createdAt"
   | "updatedAt"
+  | "reset_token"
+  | "reset_token_expiry"
+>;
+
+export interface PostsAttributes {
+  id: string;
+  user_id: string;
+  title: string;
+  status: string;
+  subtitle?: string | null;
+  content: string;
+  publishedAt?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+export type PostsCreationAttributes = Optional<
+    PostsAttributes,
+    "id" | "status" | "subtitle" | "publishedAt" | "createdAt" | "updatedAt"
+>;
+
+export interface tagsAttributes {
+  id: number;
+  name: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+export type tagsCreationAttributes = Optional<
+   tagsAttributes,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export interface post_tags_Attributes {
+  post_id: string;
+  tag_id: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+export type post_tags_CreationAttributes = Optional<
+    post_tags_Attributes,
+    "createdAt" | "updatedAt"
 >;

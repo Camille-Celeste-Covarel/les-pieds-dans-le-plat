@@ -4,8 +4,14 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import sequelize from "./config/database";
-import { Exemple } from "./models/exemple.model";
+/*
+import { Exemple } from "./models/_exemple.model.sample";
+*/
 import { User } from "./models/user.model";
+import { Posts } from "./models/posts.model";
+import { Tags } from "./models/tags.model";
+import { Post_Tags} from "./models/post_tags.model";
+
 import router from "./router";
 
 import {
@@ -53,7 +59,29 @@ async function startServer() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
-  app.use("/uploads", express.static("uploads"));
+
+  // --- CRÉATION AUTOMATIQUE DES DOSSIERS D'UPLOAD ---
+  try {
+    // On cible le dossier 'uploads/avatars' à la racine du dossier 'server'
+    const avatarsDir = path.join(__dirname, "..", "uploads", "avatars");
+
+    // fs.mkdirSync avec { recursive: true } crée les dossiers parents si besoin
+    // et ne renvoie pas d'erreur s'ils existent déjà.
+    fs.mkdirSync(avatarsDir, { recursive: true });
+    console.log(
+      "✅ Le dossier pour les uploads d'avatars est prêt.",
+      LogLevel.INFO,
+    );
+  } catch (error) {
+    console.error(
+      "❌ Erreur lors de la création du dossier d'uploads :",
+      error,
+      LogLevel.CRITICAL,
+    );
+  }
+
+  // On sert le dossier 'uploads' comme un dossier statique
+  app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
   // --- 2. ROUTEUR DE L'API ---
   // Toutes les requêtes commençant par /api sont gérées par notre routeur.
@@ -106,6 +134,7 @@ async function startServer() {
       LogLevel.INFO,
     );
 
+/*
     console.log(
       "Tentative d'activation de l'extension PostGIS...",
       LogLevel.INFO,
@@ -115,22 +144,28 @@ async function startServer() {
       "✅ Extension PostGIS activée ou déjà présente !",
       LogLevel.INFO,
     );
+*/
 
     // --- INITIALISATION DES MODÈLES ---
 
     // NIVEAU 0 : Modèles sans dépendances ou avec des dépendances simples
     User.initialize(sequelize);
-    Exemple.initialize(sequelize);
+    Posts.initialize(sequelize);
 
     // NIVEAU 1 : Modèles dépendant du niveau 0
+    Tags.initialize(sequelize);
 
     // NIVEAU 2 : Modèles dépendant du niveau 1
+    Post_Tags.initialize(sequelize);
 
     // NIVEAU 3 : Modèles dépendant du niveau 2
 
     // --- DÉFINITION DES ASSOCIATIONS ---
     User.associate(sequelize);
-    Exemple.associate(sequelize);
+    Posts.associate(sequelize);
+    Tags.associate(sequelize);
+    Post_Tags.associate(sequelize);
+
 
     console.log("sequelize.sync est géré par les migrations.", LogLevel.INFO);
 

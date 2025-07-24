@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-
+import { useAuth } from "../contexts/AuthContext.tsx";
 import "../stylesheets/loginpage.css";
 
 function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [public_name, setPublicName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,14 +23,16 @@ function LoginPage() {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ public_name, password }),
         },
       );
 
       if (response.ok) {
+        const data = await response.json();
+        login(data.user);
         navigate("/");
       } else {
-        setError("Email ou mot de passe incorrect");
+        setError("Identifiant ou mot de passe incorrect");
       }
     } catch (error) {
       console.error("Erreur: ", error);
@@ -41,15 +44,15 @@ function LoginPage() {
     <div className="login-page-container">
       <form onSubmit={handleSubmit} className="login-form">
         <div className="form-group">
-          <label htmlFor="email">Adresse mail</label>
+          <label htmlFor="public_name">Pseudonyme</label>
           <div className="email-input">
             <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              id="public_name"
+              value={public_name}
+              onChange={(e) => setPublicName(e.target.value)}
               required
-              placeholder="Tapez votre adresse mail"
+              placeholder="Tapez votre pseudonyme"
             />
           </div>
         </div>

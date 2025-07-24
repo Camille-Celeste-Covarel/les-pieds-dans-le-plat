@@ -8,17 +8,17 @@ import { Op } from "sequelize";
 import type { AuthRequest } from "../middleware/isConnected";
 import { User } from "../models/_index";
 
-// Ajoute ceci :
 interface MulterFiles {
   avatar?: Express.Multer.File[];
-  vehicle_photo?: Express.Multer.File[];
 }
 
 // L'opération BREAD : Browse (Read All)
 // Récupère tous les utilisateurs de la base de données.
 const browse: RequestHandler = async (req, res, next) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: { exclude: ["password", "reset_token", "reset_token_expiry"] },
+    });
     res.json(users);
   } catch (err) {
     next(err);
@@ -30,7 +30,9 @@ const browse: RequestHandler = async (req, res, next) => {
 const read: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(userId, {
+      attributes: { exclude: ["password", "reset_token", "reset_token_expiry"] },
+    });
 
     if (user == null) {
       res.sendStatus(404);
@@ -52,7 +54,9 @@ const add: RequestHandler = async (req, res, next) => {
 const edit: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    const [affectedCount] = await User.update(req.body, {
+    const { password, is_admin, ...updateData } = req.body;
+
+    const [affectedCount] = await User.update(updateData, {
       where: { id: userId },
     });
 
@@ -87,70 +91,43 @@ const destroy: RequestHandler = async (req, res, next) => {
 
 const register: RequestHandler = async (req, res, next) => {
   try {
-    // 1. Récupérer les champs texte depuis req.body
-    const {
-      email,
-      password,
-      first_name,
-      last_name,
-      birthdate,
-      address,
-      address_bis,
-      city,
-      postcode,
-      country,
-      gender,
-    } = req.body;
+    const { email, password, public_name } = req.body;
 
-    // 2. Vérifier si l'utilisateur existe déjà
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({
+      where: { [Op.or]: [{ email }, { public_name }] },
+    });
+
     if (existingUser) {
-      res.status(400).json({
-        error: "Un utilisateur avec cet email existe déjà",
-      });
-      return;
+      const errorMessage =
+        existingUser.email === email
+          ? "Un utilisateur avec cet email existe déjà"
+          : "Ce pseudonyme est déjà utilisé";
+      return res.status(409).json({ error: errorMessage });
     }
 
-    // 3. Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // 4. Gérer les fichiers uploadés via req.files
     const files = req.files as MulterFiles;
-    let avatar_url: string | undefined = undefined;
-    let vehicle_photo_url: string | undefined = undefined;
+    let avatar_url: string | undefined;
 
     if (files.avatar?.[0]) {
       avatar_url = `/uploads/avatars/${files.avatar[0].filename}`;
     }
-    if (files.vehicle_photo?.[0]) {
-      vehicle_photo_url = `/uploads/vehicle_photos/${files.vehicle_photo[0].filename}`;
-    }
 
-    // 5. Créer l'utilisateur en base de données avec la bonne URL d'avatar
     const user = await User.create({
       email,
       password: hashedPassword,
-      first_name,
-      last_name,
-      birthdate,
-      address,
-      address_bis,
-      city,
-      postcode,
-      country,
-      gender,
+      public_name,
       avatar_url,
       is_admin: false,
     });
 
-    // 7. Envoyer la réponse
     res.status(201).json({
       message: "Utilisateur créé avec succès",
       user: {
         id: user.id,
         email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        public_name: user.public_name,
         avatar_url: user.avatar_url,
       },
     });
@@ -161,31 +138,21 @@ const register: RequestHandler = async (req, res, next) => {
 
 const login: RequestHandler = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { public_name, password } = req.body;
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { public_name } });
     if (!user) {
-      res.status(401).json({
-        error: "Email ou mot de passe incorrect",
-      });
-      return;
+      return res.status(401).json({ error: "Identifiant ou mot de passe incorrect" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      res.status(401).json({
-        error: "Email ou mot de passe incorrect",
-      });
-      return;
+      return res.status(401).json({ error: "Identifiant ou mot de passe incorrect" });
     }
 
     const jwtSecret = process.env.JWT_SECRET as string;
-
     const token = jwt.sign(
-      {
-        id: user.id,
-        isAdmin: user.is_admin,
-      },
+      { id: user.id, isAdmin: user.is_admin },
       jwtSecret,
       { expiresIn: process.env.JWT_EXPIRES_IN || "24h" } as jwt.SignOptions,
     );
@@ -196,10 +163,9 @@ const login: RequestHandler = async (req, res, next) => {
     const userResponse = {
       id: user.id,
       email: user.email,
-      firstName: user.first_name,
-      lastName: user.last_name,
+      public_name: user.public_name,
       isAdmin: user.is_admin,
-      avatarUrl: avatarUrl,
+      avatarUrl,
     };
 
     res.cookie("authToken", token, {
@@ -225,10 +191,7 @@ const logout: RequestHandler = async (req, res, next) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-
-    res.json({
-      message: "Déconnexion réussie",
-    });
+    res.json({ message: "Déconnexion réussie" });
   } catch (err) {
     next(err);
   }
@@ -237,30 +200,26 @@ const logout: RequestHandler = async (req, res, next) => {
 const check: RequestHandler = async (req: AuthRequest, res, next) => {
   try {
     if (!req.user) {
-      res.status(401).json({ error: "Utilisateur non authentifié." });
-      return;
+      return res.status(401).json({ error: "Utilisateur non authentifié." });
     }
 
     const userFromDb = await User.findByPk(req.user.id, {
-      attributes: ["id", "first_name", "is_admin", "avatar_url"],
+      attributes: ["id", "public_name", "is_admin", "avatar_url"],
     });
 
     if (!userFromDb) {
-      res.status(404).json({ error: "Utilisateur non trouvé en BDD." });
-      return;
+      return res.status(404).json({ error: "Utilisateur non trouvé en BDD." });
     }
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
-    const avatarUrl = userFromDb.avatar_url
-      ? `${baseUrl}/api/uploads/avatars/${userFromDb.avatar_url}`
-      : null;
+    const avatarUrl = userFromDb.avatar_url ? `${baseUrl}${userFromDb.avatar_url}` : null;
 
     res.json({
       authenticated: true,
       user: {
-        firstName: userFromDb.first_name,
+        public_name: userFromDb.public_name,
         isAdmin: userFromDb.is_admin,
-        avatarUrl: avatarUrl,
+        avatarUrl,
       },
     });
   } catch (error) {
@@ -274,13 +233,10 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      res.json({
-        message: "Si l'email existe, un lien a été envoyé.",
-      });
-      return;
+      return res.json({ message: "Si l'email existe, un lien a été envoyé." });
     }
     const token = crypto.randomBytes(32).toString("hex");
-    const tokenExpiry = new Date(Date.now() + 1000 * 60 * 60);
+    const tokenExpiry = new Date(Date.now() + 1000 * 60 * 60); // 1 heure
 
     user.reset_token = token;
     user.reset_token_expiry = tokenExpiry;
@@ -289,7 +245,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
-      secure: false,
+      secure: Number(process.env.EMAIL_PORT) === 465,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -305,9 +261,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
       html: `<p>Pour réinitialiser votre mot de passe, cliquez sur ce lien : <a href="${resetUrl}">${resetUrl}</a></p>`,
     });
 
-    res.json({
-      message: "Si l'email existe, un lien a été envoyé.",
-    });
+    res.json({ message: "Si l'email existe, un lien a été envoyé." });
   } catch (err) {
     next(err);
   }
@@ -317,12 +271,8 @@ const resetPassword: RequestHandler = async (req, res, next) => {
   try {
     const { token, password } = req.body;
 
-    // Vérification de la longueur du mot de passe
     if (!password || password.length < 6) {
-      res
-        .status(400)
-        .json({ message: "Le mot de passe doit faire au moins 6 caractères." });
-      return;
+      return res.status(400).json({ message: "Le mot de passe doit faire au moins 6 caractères." });
     }
 
     const user = await User.findOne({
@@ -333,11 +283,10 @@ const resetPassword: RequestHandler = async (req, res, next) => {
     });
 
     if (!user) {
-      res.status(400).json({ message: "Lien invalide ou expiré." });
-      return;
+      return res.status(400).json({ message: "Lien invalide ou expiré." });
     }
 
-    user.password = await bcrypt.hash(password, 10);
+    user.password = await bcrypt.hash(password, 12);
     user.reset_token = null;
     user.reset_token_expiry = null;
     await user.save();
@@ -348,22 +297,58 @@ const resetPassword: RequestHandler = async (req, res, next) => {
   }
 };
 
-const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
+const getMe: RequestHandler = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    console.log("ID utilisateur reçu dans getMe :", req.user?.id);
-    const user = await User.findByPk(req.user?.id, {
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "Non authentifié" });
+    }
+    const user = await User.findByPk(req.user.id, {
       attributes: {
         exclude: ["password", "reset_token", "reset_token_expiry"],
       },
-      include: [
-        // need information
-      ],
     });
     if (!user) {
-      res.status(404).json({ message: "Utilisateur non trouvé" });
-      return;
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
-    res.json(user);
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const absoluteAvatarUrl = user.avatar_url ? `${baseUrl}${user.avatar_url}` : null;
+
+    res.json({
+      ...user.get(),
+      avatar_url: absoluteAvatarUrl,
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateAvatar: RequestHandler = async (req: AuthRequest, res, next) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "Non authentifié" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: "Aucun fichier n'a été envoyé." });
+    }
+
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé." });
+    }
+
+    const avatar_url = `/uploads/avatars/${req.file.filename}`;
+    user.avatar_url = avatar_url;
+    await user.save();
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const absoluteAvatarUrl = `${baseUrl}${user.avatar_url}`;
+
+    res.status(200).json({
+      message: "Avatar mis à jour avec succès.",
+      avatar_url: absoluteAvatarUrl,
+    });
   } catch (err) {
     next(err);
   }
@@ -382,4 +367,5 @@ export default {
   resetPassword,
   check,
   getMe,
+  updateAvatar,
 };
