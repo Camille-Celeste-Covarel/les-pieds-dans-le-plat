@@ -1,7 +1,8 @@
 import { type ReactNode, createContext, useCallback, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface OverlayContextType {
+  openOverlay: (hash: string) => void;
   closeOverlay: () => void;
 }
 
@@ -9,12 +10,20 @@ const OverlayContext = createContext<OverlayContextType | undefined>(undefined);
 
 export const OverlayProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const openOverlay = useCallback(
+    (hash: string) => {
+      navigate(`${location.pathname}${hash}`);
+    },
+    [navigate, location.pathname],
+  );
 
   const closeOverlay = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
+    navigate(location.pathname);
+  }, [navigate, location.pathname]);
 
-  const value = { closeOverlay };
+  const value = { openOverlay, closeOverlay };
 
   return (
     <OverlayContext.Provider value={value}>{children}</OverlayContext.Provider>

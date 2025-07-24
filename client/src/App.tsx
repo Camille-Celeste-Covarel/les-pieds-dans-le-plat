@@ -1,57 +1,71 @@
 import { isMobile } from "react-device-detect";
-import { Outlet, useLocation, useMatches } from "react-router-dom";
-import { Overlay } from "./components/Overlay/Overlay.tsx";
-import "./components/Overlay/Overlay.css";
-import Footer from "./components/Footer/Footer.tsx";
-import Header from "./components/Header/Header.tsx";
-import { AuthProvider } from "./contexts/AuthContext";
-import { OverlayProvider } from "./contexts/OverlayContext/OverlayContext.tsx";
+import { Outlet, useLocation } from "react-router-dom";
+import Footer from "./components/Footer/Footer";
+import Header from "./components/Header/Header";
+import { Overlay } from "./components/Overlay/Overlay";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { OverlayProvider } from "./contexts/OverlayContext/OverlayContext";
+import { overlayRoutes } from "./middlewares/overlays.tsx";
 
+import "./components/Overlay/Overlay.css";
 import "./stylesheets/App.css";
 import "./stylesheets/normalize.css";
 
-interface RouteHandle {
-    isOverlay?: boolean;
-}
-
 function AppContent() {
-    const matches = useMatches();
-    const location = useLocation();
+  const location = useLocation();
+  const { isAuthenticated, isAdmin } = useAuth();
 
-    const isOverlayRoute = matches.some(
-        (match) => (match.handle as RouteHandle)?.isOverlay,
-    );
-    const isRootPath = location.pathname === "/";
+  const isRootPath = location.pathname === "/";
 
-    // --- Logique d'affichage ---
-    const shouldShowOverlay = !isMobile && isOverlayRoute;
-    const shouldShowFullPage = !isRootPath && !isOverlayRoute;
-    const shouldShowMobilePage = isMobile && !isRootPath;
+  const currentOverlayRoute = !isMobile ? overlayRoutes[location.hash] : undefined;
+  let isAuthorized = false;
+  if (currentOverlayRoute) {
+    switch (currentOverlayRoute.protection) {
+      case "public":
+        isAuthorized = true;
+        break;
+      case "protected":
+        isAuthorized = isAuthenticated;
+        break;
+      case "admin":
+        isAuthorized = isAuthenticated && isAdmin;
+        break;
+      default:
+        isAuthorized = false;
+    }
+  }
 
-    const routeContent = <Outlet />;
+  const shouldShowOverlay = isAuthorized && currentOverlayRoute;
+  const overlayContent = shouldShowOverlay ? currentOverlayRoute.component : null;
+  const shouldShowMainPage = !isRootPath;
+  const routeContent = <Outlet />;
 
-    return (
-        <div className="app-container">
-            <Header />
-            <main className="main-content">
-                {shouldShowOverlay && <Overlay>{routeContent}</Overlay>}
-            </main>
-            {(shouldShowFullPage || shouldShowMobilePage) && (
-                <div className="main-page-container">{routeContent}</div>
-            )}
-            <Footer />
-        </div>
-    );
+  if (isRootPath) {
+    return <main className="main-content">{routeContent}</main>;
+  }
+
+  return (
+    <div className="app-container">
+      <Header />
+      <main className="main-content">
+        {shouldShowMainPage && (
+          <div className="main-page-container">{routeContent}</div>
+        )}
+        {shouldShowOverlay && <Overlay>{overlayContent}</Overlay>}
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 function App() {
-    return (
-        <AuthProvider>
-            <OverlayProvider>
-                <AppContent />
-            </OverlayProvider>
-        </AuthProvider>
-    );
+  return (
+    <AuthProvider>
+      <OverlayProvider>
+        <AppContent />
+      </OverlayProvider>
+    </AuthProvider>
+  );
 }
 
 export default App;
