@@ -1,0 +1,61 @@
+.exprimez-vous-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.exprimez-vous-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.exprimez-vous-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.exprimez-vous-form input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.exprimez-vous-form .submit-button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background-color: var(--fondamental-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 2rem;
+  transition: background-color 0.2s;
+}
+
+.exprimez-vous-form .submit-button:hover {
+  background-color: #3a4a7a;
+}
+
+.form-message {
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.form-message.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.form-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}

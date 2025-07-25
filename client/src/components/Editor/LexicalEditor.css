@@ -1,0 +1,225 @@
+/* --- Layout Général --- */
+.editor-shell {
+  display: flex;
+  flex-direction: row; /* Aligne l'éditeur et la vue de débogage côte à côte */
+  gap: 10px;
+}
+
+.editor-container {
+  flex-grow: 1; /* Permet à l'éditeur de prendre l'espace disponible */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  position: relative;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-inner {
+  background: #fff;
+  position: relative;
+  flex-grow: 1;
+}
+
+/* --- Barre d'outils --- */
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+}
+
+.editor-toolbar button,
+.editor-toolbar select {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.editor-toolbar button.active,
+.editor-toolbar select.active {
+  background: #e0e0e0;
+  font-weight: bold;
+}
+
+.editor-toolbar button:disabled {
+  cursor: not-allowed;
+  background-color: #fafafa;
+  opacity: 0.5;
+}
+
+.toolbar-divider {
+  display: inline-block;
+  width: 1px;
+  background-color: #ddd;
+  margin: 0 4px;
+  height: 24px;
+  align-self: center;
+}
+
+/* --- Zone d'édition --- */
+.editor-input {
+  min-height: 250px;
+  font-size: 1rem;
+  outline: none;
+  resize: vertical;
+  caret-color: rgb(5, 5, 5);
+  padding: 5px;
+}
+
+.editor-placeholder {
+  position: absolute;
+  top: 15px;
+  left: 10px;
+  color: #999;
+  pointer-events: none;
+  user-select: none;
+  font-size: 1rem;
+}
+
+.editor-paragraph {
+  margin: 0 0 8px 0;
+  position: relative;
+}
+
+.editor-heading-h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 16px 0;
+  padding: 0;
+}
+
+.editor-heading-h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 12px 0;
+  padding: 0;
+}
+
+.editor-heading-h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 10px 0;
+  padding: 0;
+}
+
+.editor-quote {
+  margin: 0 0 1rem 20px;
+  padding-left: 16px;
+  border-left: 4px solid #ccc;
+  color: #555;
+  font-style: italic;
+}
+
+.editor-list-ul {
+  padding-left: 20px;
+  margin: 0 0 8px 0;
+  list-style-position: inside;
+}
+
+.editor-list-ol {
+  padding-left: 20px;
+  margin: 0 0 8px 0;
+  list-style-position: inside;
+}
+
+.editor-list-item {
+  margin: 4px 0;
+}
+
+.editor-code {
+  background-color: #f0f2f5;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  display: block;
+  white-space: pre-wrap;
+}
+
+/* --- Styles de texte en ligne --- */
+.editor-text-bold {
+  font-weight: bold;
+}
+
+.editor-text-italic {
+  font-style: italic;
+}
+
+.editor-text-underline {
+  text-decoration: underline;
+}
+
+.editor-text-strikethrough {
+  text-decoration: line-through;
+}
+
+.editor-text-code {
+  background-color: #f0f2f5;
+  padding: 1px 4px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
+
+/* --- Alignement --- */
+.editor-paragraph.left,
+.editor-heading-h1.left,
+.editor-heading-h2.left,
+.editor-heading-h3.left {
+  text-align: left;
+}
+.editor-paragraph.center,
+.editor-heading-h1.center,
+.editor-heading-h2.center,
+.editor-heading-h3.center {
+  text-align: center;
+}
+.editor-paragraph.right,
+.editor-heading-h1.right,
+.editor-heading-h2.right,
+.editor-heading-h3.right {
+  text-align: right;
+}
+.editor-paragraph.justify,
+.editor-heading-h1.justify,
+.editor-heading-h2.justify,
+.editor-heading-h3.justify {
+  text-align: justify;
+}
+
+.editor-table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  margin: 16px 0;
+  border: 1px solid #ccc;
+}
+
+.editor-table td,
+.editor-table th {
+  border: 1px solid #ccc;
+  padding: 8px;
+  min-width: 75px;
+}
+
+/* --- Vue de débogage (Tree View) --- */
+.tree-view-output {
+  flex-shrink: 0;
+  width: 300px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #f5f5f5;
+  font-family: monospace;
+  font-size: 12px;
+  overflow: auto;
+  border-radius: 8px;
+}
