@@ -22,6 +22,10 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
+  background-color: var(
+    --quinte-color
+  );
+  color: var(--fondamental-color);
 }
 
 .exprimez-vous-form .submit-button {
