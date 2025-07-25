@@ -3,8 +3,7 @@ import type {
   PostsAttributes,
   PostsCreationAttributes,
 } from "../types/models/models";
-import {User} from "./user.model";
-import {Tags} from "./tags.model";
+import type { User } from "./user.model";
 
 export class Posts
   extends Model<PostsAttributes, PostsCreationAttributes>
@@ -20,6 +19,8 @@ export class Posts
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
+  public readonly author?: User;
+
   static initialize(sequelize: Sequelize) {
     Posts.init(
       {
@@ -33,8 +34,8 @@ export class Posts
           type: DataTypes.UUID,
           allowNull: false,
           references: {
-            model: 'users',
-            key: 'id',
+            model: "users",
+            key: "id",
           },
         },
         title: {
@@ -81,5 +82,6 @@ export class Posts
       foreignKey: "post_id",
       otherKey: "tag_id",
       as: "tags",
-    });  }
+    });
+  }
 }

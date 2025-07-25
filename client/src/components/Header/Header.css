@@ -18,10 +18,22 @@ Thanks Temani Afif for css hover effect :)
   border: none;
   cursor: pointer;
   padding: 0;
+  text-decoration: none; /* Assure que le lien n'est pas souligné */
 }
 
 .logo {
   height: 30px;
+}
+
+.logo-text {
+  font-family: "Glass Antiqua", cursive;
+  font-size: 2rem;
+  font-weight: 400;
+  font-style: revert;
+  color: white;
+  text-decoration: none;
+  text-transform: lowercase;
+  letter-spacing: 1.5px;
 }
 
 .login-button,
@@ -92,7 +104,6 @@ Thanks Temani Afif for css hover effect :)
   background-size: 0.4em 4px;
   background-position: 50% 100%;
 }
-
 
 .user-menu {
   display: flex;

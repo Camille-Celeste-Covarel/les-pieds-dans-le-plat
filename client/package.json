@@ -8,8 +8,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lexical/code": "^0.33.1",
+    "@lexical/link": "^0.33.1",
+    "@lexical/list": "^0.33.1",
+    "@lexical/markdown": "^0.33.1",
     "@lexical/plain-text": "^0.33.1",
     "@lexical/react": "^0.33.1",
+    "@lexical/rich-text": "^0.33.1",
+    "@lexical/selection": "^0.33.1",
+    "@lexical/utils": "^0.33.1",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-query-devtools": "^5.83.0",
     "lexical": "^0.33.1",
@@ -25,7 +32,6 @@
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
-    "sequelize": "^6.37.7",
     "typescript": "^5.8.2",
     "vite": "^6.2.4"
   }

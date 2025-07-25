@@ -4,6 +4,7 @@ import upload from "./config/multer";
 import isAdmin from "./middleware/isAdmin";
 import authenticateToken from "./middleware/isConnected";
 import uploadAvatar from "./middleware/uploadAvatar";
+import postsActions from "./modules/postsAction";
 import userActions from "./modules/userActions";
 import { startCronJobs } from "./tools/cron.service";
 
@@ -21,11 +22,12 @@ router.post(
   uploadAvatar.fields([{ name: "avatar", maxCount: 1 }]),
   userActions.register,
 );
-
 router.post("/auth/logout", userActions.logout);
 router.get("/auth/check", authenticateToken, userActions.check);
 router.post("/auth/forgot-password", userActions.forgotPassword);
 router.post("/auth/reset-password", userActions.resetPassword);
+
+router.get("/posts", postsActions.browse);
 
 /* ************************************************************************* */
 // 🛡️ Wall d'autorisation - Tout ce qui suit nécessite d'être connecté
@@ -45,6 +47,8 @@ router.patch(
   userActions.updateAvatar,
 );
 
+router.post("/posts", postsActions.create);
+
 /* ************************************************************************* */
 // 👑 Wall d'administration - Tout ce qui suit nécessite d'être Admin
 /* ************************************************************************* */
@@ -61,6 +65,9 @@ router.get("/users", userActions.browse);
 router.post("/users", userActions.add);
 router.put("/users/:id", userActions.edit);
 router.delete("/users/:id", userActions.destroy);
+
+router.get("/admin/posts", postsActions.browse);
+router.patch("/admin/posts/:id/status", postsActions.updateStatus);
 
 // Démarrage des tâches de fond (cron jobs)
 startCronJobs();
