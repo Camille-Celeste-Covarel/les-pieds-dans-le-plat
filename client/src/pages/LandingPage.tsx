@@ -11,21 +11,23 @@ function LandingPage() {
                 <div className="landing-text-wrapper">
                     <h1 className="landing-title">Les Pieds dans le Plat</h1>
                     <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non
-                        risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing
-                        nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas
-                        ligula massa, varius a, semper congue, euismod non, mi.
+                        Nous sommes ravis de vous accueillir dans un espace où la liberté d'expression rime avec
+                        qualité et respect. Notre ambition est de créer une communauté où chacun peut partager
+                        ses idées et découvrir de nouvelles perspectives dans un environnement sain et stimulant.
                     </p>
                     <p>
-                        Proin porttitor, orci nec nonummy molestie, enim est eleifend mi,
-                        non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa,
-                        scelerisque vitae, consequat in, pretium a, enim. Pellentesque
-                        congue.
+                        Nous avons à cœur de vous offrir une plateforme exempte des écueils habituels du web. Ici,
+                        la bienveillance et la précision de l'information sont nos maîtres mots. Nous nous engageons
+                        à ce que chaque contenu soit une ouverture sur la pensée de chacun, favorisant des échanges
+                        authentiques et constructifs.
                     </p>
                     <p>
-                        Ut in risus volutpat libero pharetra tempor. Cras vestibulum
-                        bibendum augue. Praesent egestas leo in pede. Praesent blandit odio
-                        eu enim. Pellentesque sed dui ut augue blandit sodales.
+                        Nous sommes impatients de lire vos contributions et de voir les échanges positifs et constructifs
+                        que notre communauté va générer. C'est votre voix, éclairée et respectueuse, qui fera la
+                        richesse de ce projet.
+                    </p>
+                    <p>
+                        L'équipe des Pieds dans le Plat
                     </p>
                 </div>
                 <button

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { isMobile } from "react-device-detect"; // <-- Importer isMobile
 import { useAuth } from "../contexts/AuthContext.tsx";
+import { useOverlay } from "../contexts/OverlayContext/OverlayContext.tsx";
 import "../stylesheets/loginpage.css";
 
 function LoginPage() {
@@ -9,6 +11,7 @@ function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { openOverlay, closeOverlay } = useOverlay();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,9 +22,7 @@ function LoginPage() {
         `${import.meta.env.VITE_API_URL}/api/auth/login`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ public_name, password }),
         },
@@ -30,13 +31,33 @@ function LoginPage() {
       if (response.ok) {
         const data = await response.json();
         login(data.user);
-        navigate("/");
+        if (isMobile) {
+          navigate("/le-mur");
+        } else {
+          closeOverlay();
+        }
       } else {
         setError("Identifiant ou mot de passe incorrect");
       }
     } catch (error) {
       console.error("Erreur: ", error);
       setError("Erreur de connexion");
+    }
+  };
+
+  const handleForgotPasswordClick = () => {
+    if (isMobile) {
+      navigate("/forgot-password");
+    } else {
+      openOverlay("#forgot-password");
+    }
+  };
+
+  const handleRegisterClick = () => {
+    if (isMobile) {
+      navigate("/register");
+    } else {
+      openOverlay("#register");
     }
   };
 
@@ -71,9 +92,7 @@ function LoginPage() {
             <button
               type="button"
               className="login-forgot-password"
-              onClick={() => {
-                navigate("/forgot-password");
-              }}
+              onClick={handleForgotPasswordClick}
             >
               Mot de passe oublié ?
             </button>
@@ -93,7 +112,7 @@ function LoginPage() {
         <button
           type="button"
           className="button-classic"
-          onClick={() => navigate("/register")}
+          onClick={handleRegisterClick}
         >
           S'inscrire !
         </button>
