@@ -9,6 +9,7 @@ import {
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   REDO_COMMAND,
+  type SerializedElementNode,
   type TextFormatType,
   UNDO_COMMAND,
 } from "lexical";
@@ -112,6 +113,24 @@ const FONT_SIZE_OPTIONS: [string, string][] = [
   ["32px", "32"],
 ];
 
+const COLOR_PALETTE_MAP: Record<string, string> = {
+  "var(--fondamental-color)": "Couleur principale",
+  "var(--seconde-color)": "Couleur secondaire",
+  "var(--tierce-color)": "Couleur tierce",
+  "var(--quarte-color)": "Couleur quarte",
+  "var(--quinte-color)": "Couleur quinte",
+  "#000000": "Noir",
+  "#E03131": "Rouge",
+  "#2F9E44": "Vert",
+  "#1971C2": "Bleu",
+  "#F59F00": "Orange",
+  "#862E9C": "Violet",
+  "#495057": "Gris foncé",
+  "#C2255C": "Rose",
+};
+
+const COLOR_PALETTE = Object.keys(COLOR_PALETTE_MAP);
+
 function ToolbarPlugin() {
   const [editor] = useLexicalComposerContext();
   const [isBold, setIsBold] = useState(false);
@@ -125,13 +144,17 @@ function ToolbarPlugin() {
 
   const [fontFamily, setFontFamily] = useState<string>("Montserrat");
   const [fontSize, setFontSize] = useState<string>("16px");
+  const [color, setColor] = useState<string>("#000000");
 
   const [isFontFamilyDropdownOpen, setIsFontFamilyDropdownOpen] =
     useState(false);
   const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
   const fontFamilyRef = useRef<HTMLDivElement>(null);
   const fontSizeRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+  const colorPaletteRef = useRef<HTMLDivElement>(null);
 
   const updateToolbar = useCallback(() => {
     editor.getEditorState().read(() => {
@@ -155,6 +178,9 @@ function ToolbarPlugin() {
       );
       setFontSize(
         $getSelectionStyleValueForProperty(selection, "font-size", "16px"),
+      );
+      setColor(
+        $getSelectionStyleValueForProperty(selection, "color", "#000000"),
       );
 
       const anchorNode = selection.anchor.getNode();
@@ -218,12 +244,24 @@ function ToolbarPlugin() {
       ) {
         setIsFontFamilyDropdownOpen(false);
       }
+      if (
+        colorPickerRef.current &&
+        !colorPickerRef.current.contains(event.target as Node)
+      ) {
+        setIsColorPickerOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (isColorPickerOpen && colorPaletteRef.current) {
+      colorPaletteRef.current.focus();
+    }
+  }, [isColorPickerOpen]);
 
   const applyStyleText = useCallback(
     (styles: Record<string, string>) => {
@@ -247,10 +285,15 @@ function ToolbarPlugin() {
     setIsFontSizeDropdownOpen(false);
   };
 
+  const handleColorChange = (newColor: string) => {
+    applyStyleText({ color: newColor });
+    setIsColorPickerOpen(false);
+  };
+
   const handleFontSizeIncrement = (direction: "increment" | "decrement") => {
     const currentSize = Number.parseInt(fontSize, 10);
     let newSize = direction === "increment" ? currentSize + 1 : currentSize - 1;
-    if (newSize < 8) newSize = 8; // Minimum size
+    if (newSize < 8) newSize = 8;
     handleFontSizeChange(`${newSize}px`);
   };
 
@@ -420,6 +463,53 @@ function ToolbarPlugin() {
       </div>
 
       <span className="toolbar-divider" />
+
+      <div className="color-picker-control" ref={colorPickerRef}>
+        <button
+          type="button"
+          className="color-picker-display-btn"
+          onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
+          aria-haspopup="true"
+          aria-expanded={isColorPickerOpen}
+          aria-label="Changer la couleur du texte"
+        >
+          <div
+            className="color-swatch-display"
+            style={{ backgroundColor: color }}
+          />
+        </button>
+        {isColorPickerOpen && (
+          <div
+            ref={colorPaletteRef}
+            tabIndex={-1}
+            className="color-palette-dropdown"
+            role="toolbar"
+            aria-label="Palette de couleurs"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                e.preventDefault();
+                setIsColorPickerOpen(false);
+                colorPickerRef.current?.querySelector("button")?.focus();
+              }
+            }}
+          >
+            {COLOR_PALETTE.map((c) => (
+              <button
+                key={c}
+                type="button"
+                aria-pressed={color === c}
+                className={`color-palette-swatch ${
+                  color === c ? "active" : ""
+                }`}
+                style={{ backgroundColor: c }}
+                onClick={() => handleColorChange(c)}
+                aria-label={COLOR_PALETTE_MAP[c]}
+                title={COLOR_PALETTE_MAP[c]}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       <button
         type="button"
@@ -599,23 +689,43 @@ function ToolbarPlugin() {
 interface LexicalEditorProps {
   onChange: (editorState: string) => void;
   id?: string;
+  initialContent?: string;
 }
 
-export function LexicalEditor({ onChange, id }: LexicalEditorProps) {
+export function LexicalEditor({
+  onChange,
+  id,
+  initialContent,
+}: LexicalEditorProps) {
   const initialConfig = useMemo(
     () => ({
       namespace: "MyEditor",
       theme: editorTheme,
       onError,
       nodes: editorNodes,
+      editorState: initialContent,
     }),
-    [],
+    [initialContent],
   );
 
   const handleStateChange = useCallback(
     (editorState: EditorState) => {
-      const editorStateJSON = JSON.stringify(editorState.toJSON());
-      onChange(editorStateJSON);
+      const editorStateJSON = editorState.toJSON();
+      const firstChild = editorStateJSON.root.children[0];
+
+      // L'éditeur est considéré non-vide s'il a plus d'un bloc,
+      // ou si son unique bloc a du contenu.
+      const isNonEmpty =
+        editorStateJSON.root.children.length > 1 ||
+        (firstChild &&
+          "children" in firstChild &&
+          (firstChild as SerializedElementNode).children.length > 0);
+
+      if (isNonEmpty) {
+        onChange(JSON.stringify(editorStateJSON));
+      } else {
+        onChange(""); // Envoyer une chaîne vide si le contenu est effacé
+      }
     },
     [onChange],
   );

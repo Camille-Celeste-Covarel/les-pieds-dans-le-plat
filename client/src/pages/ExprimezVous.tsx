@@ -6,6 +6,7 @@ function ExprimezVous() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [editorState, setEditorState] = useState<string>("");
+  const [editorKey, setEditorKey] = useState(0);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -15,7 +16,6 @@ function ExprimezVous() {
     e.preventDefault();
     setMessage(null);
 
-    // Validation simple côté client
     if (!title.trim()) {
       setMessage({ type: "error", text: "Le titre est obligatoire." });
       return;
@@ -54,6 +54,8 @@ function ExprimezVous() {
       });
       setTitle("");
       setSubtitle("");
+      setEditorState("");
+      setEditorKey((prevKey) => prevKey + 1);
     } catch (error) {
       if (error instanceof Error) {
         setMessage({ type: "error", text: error.message });
@@ -100,7 +102,11 @@ function ExprimezVous() {
 
         <div className="form-group">
           <label htmlFor="article-content">Contenu de l'article</label>
-          <LexicalEditor onChange={setEditorState} id="article-content" />
+          <LexicalEditor
+            key={editorKey}
+            onChange={setEditorState}
+            id="article-content"
+          />
         </div>
 
         {message && (
