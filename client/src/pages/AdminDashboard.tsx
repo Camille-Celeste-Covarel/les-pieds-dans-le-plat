@@ -1,4 +1,5 @@
 import type React from "react";
+import PostValidation from "./Admin/PostValidation";
 
 const AdminDashboard: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const AdminDashboard: React.FC = () => {
       <h1>Panneau d'Administration</h1>
       <p>Bienvenue dans l'espace réservé aux administrateurs.</p>
       <hr style={{ margin: "2rem auto", maxWidth: "600px" }} />
+      <PostValidation />
     </div>
   );
 };

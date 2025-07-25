@@ -1,5 +1,4 @@
 import { isMobile } from "react-device-detect";
-import { FaGithubAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useOverlay } from "../../contexts/OverlayContext/OverlayContext";
@@ -41,11 +40,7 @@ function Header() {
         title="Retour à l'accueil"
         aria-label="Retour à l'accueil"
       >
-        <FaGithubAlt
-          className="logo-icon"
-          size={40}
-          style={{ color: "white" }}
-        />
+        <span className="logo-text">les pieds dans le plat</span>
       </Link>
 
       {isMobile ? renderMobileNav() : renderDesktopNav()}

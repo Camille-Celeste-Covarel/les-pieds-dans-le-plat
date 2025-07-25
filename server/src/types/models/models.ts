@@ -1,16 +1,5 @@
 import type { Optional } from "sequelize";
 
-/*export interface ExempleAttributes {
-  id: string;
-  Exemplebis: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-export type ExempleCreationAttributes = Optional<
-  ExempleAttributes,
-  "id" | "createdAt" | "updatedAt"
->;*/
-
 export interface UserAttributes {
   id: string;
   email: string;
@@ -35,6 +24,7 @@ export type UserCreationAttributes = Optional<
 >;
 
 export interface PostsAttributes {
+  author?: UserAttributes;
   id: string;
   user_id: string;
   title: string;
@@ -46,8 +36,14 @@ export interface PostsAttributes {
   updatedAt?: Date;
 }
 export type PostsCreationAttributes = Optional<
-    PostsAttributes,
-    "id" | "status" | "subtitle" | "publishedAt" | "createdAt" | "updatedAt"
+  PostsAttributes,
+  | "id"
+  | "status"
+  | "subtitle"
+  | "publishedAt"
+  | "createdAt"
+  | "updatedAt"
+  | "author"
 >;
 
 export interface tagsAttributes {
@@ -57,7 +53,7 @@ export interface tagsAttributes {
   updatedAt?: Date;
 }
 export type tagsCreationAttributes = Optional<
-   tagsAttributes,
+  tagsAttributes,
   "id" | "createdAt" | "updatedAt"
 >;
 
@@ -68,6 +64,6 @@ export interface post_tags_Attributes {
   updatedAt?: Date;
 }
 export type post_tags_CreationAttributes = Optional<
-    post_tags_Attributes,
-    "createdAt" | "updatedAt"
+  post_tags_Attributes,
+  "createdAt" | "updatedAt"
 >;

@@ -15,12 +15,16 @@ Ce projet combine une interface React performante avec un serveur Node.js solide
 |                | **TypeScript** | Pour un code plus sûr et plus maintenable.                               |
 |                | **TanStack Query** | Gestion du state serveur, du cache et de la synchronisation des données. |
 |                | **React Router** | Pour la gestion des routes côté client.                                  |
+|                | **Lexical** | Framework extensible pour créer des éditeurs de texte riches.            |
 |                | **React Icons** | Bibliothèque d'icônes centralisée.                                       |
 | **Backend** | **Node.js** | Environnement d'exécution JavaScript côté serveur.                       |
 |                | **Express** | Framework minimaliste pour construire l'API REST.                        |
 |                | **PostgreSQL** | Système de gestion de base de données relationnelle open-source.         |
 |                | **Sequelize** | ORM pour Node.js, facilitant les interactions avec la base de données.   |
 |                | **JWT & Bcrypt** | Pour l'authentification sécurisée par jetons.                            |
+|                | **Multer** | Middleware pour la gestion des uploads de fichiers (ex: avatars).        |
+|                | **Nodemailer** | Module pour l'envoi d'emails (ex: réinitialisation de mot de passe).     |
+|                | **Node-cron** | Pour planifier et exécuter des tâches à des moments précis.             |
 | **Tooling** | **Biome** | Linter et formateur tout-en-un pour une qualité de code irréprochable.   |
 |                | **Concurrently** | Pour lancer les serveurs client et back-end simultanément.               |
 |                | **Commitlint** | Pour s'assurer que les messages de commit suivent un format standard.    |
@@ -152,6 +156,45 @@ Pour démarrer un nouveau projet basé sur Anamnesis :
     Votre nouveau projet est prêt !
 
 ---
+
+## 🏛️ Schéma de la Base de Données
+
+Le schéma suivant représente la structure des tables et leurs relations, tel que défini dans les migrations Sequelize.
+
+```kroki-erd
+users {
+    UUID id PK
+    STRING email
+    STRING password
+    STRING public_name
+    STRING avatar_url
+    BOOLEAN is_admin
+    STRING reset_token
+    DATE reset_token_expiry
+}
+
+posts {
+    UUID id PK
+    UUID user_id FK
+    STRING title
+    ENUM status
+    STRING subtitle
+    TEXT content
+    DATE published_at
+}
+
+tags {
+    INTEGER id PK
+    STRING name
+}
+
+post_tags {
+    UUID post_id PK, FK
+    INTEGER tag_id PK, FK
+}
+
+users ||--o{ posts : "écrit"
+posts }o--o{ tags : "possède (via post_tags)"
 
 ## 📜 Licence
 
