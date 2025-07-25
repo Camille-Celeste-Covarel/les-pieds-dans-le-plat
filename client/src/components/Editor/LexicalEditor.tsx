@@ -1,13 +1,17 @@
 import {
   $createParagraphNode,
+  $createTextNode,
   $getSelection,
   $isRangeSelection,
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
+  COMMAND_PRIORITY_LOW,
   type EditorState,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
+  KEY_DOWN_COMMAND,
+  PASTE_COMMAND,
   REDO_COMMAND,
   type SerializedElementNode,
   type TextFormatType,
@@ -16,7 +20,12 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
-import { LinkNode } from "@lexical/link";
+import {
+  $createLinkNode,
+  $isLinkNode,
+  LinkNode,
+  TOGGLE_LINK_COMMAND,
+} from "@lexical/link";
 import {
   $isListItemNode,
   $isListNode,
@@ -50,6 +59,7 @@ import {
   $patchStyleText,
   $setBlocksType,
 } from "@lexical/selection";
+import { getSelectedNode } from "./utils/getSelectedNode.ts";
 
 import "./LexicalEditor.css";
 
@@ -138,6 +148,7 @@ function ToolbarPlugin() {
   const [isUnderline, setIsUnderline] = useState(false);
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [isCode, setIsCode] = useState(false);
+  const [isLink, setIsLink] = useState(false);
   const [blockType, setBlockType] = useState("paragraph");
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
@@ -168,6 +179,11 @@ function ToolbarPlugin() {
       setIsUnderline(selection.hasFormat("underline"));
       setIsStrikethrough(selection.hasFormat("strikethrough"));
       setIsCode(selection.hasFormat("code"));
+
+      // Détecter si la sélection est un lien
+      const node = getSelectedNode(selection);
+      const parent = node.getParent();
+      setIsLink($isLinkNode(node) || $isLinkNode(parent));
 
       setFontFamily(
         $getSelectionStyleValueForProperty(
@@ -275,6 +291,17 @@ function ToolbarPlugin() {
     [editor],
   );
 
+  const insertLink = useCallback(() => {
+    if (isLink) {
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
+    } else {
+      const url = prompt("Entrez l'URL du lien :");
+      if (url) {
+        editor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+      }
+    }
+  }, [editor, isLink]);
+
   const handleFontFamilyChange = (newFont: string) => {
     applyStyleText({ "font-family": newFont });
     setIsFontFamilyDropdownOpen(false);
@@ -301,24 +328,51 @@ function ToolbarPlugin() {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
   };
 
-  const formatBlock = (type: "paragraph" | "h1" | "h2" | "quote") => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        if (blockType === type && type !== "paragraph") {
-          $setBlocksType(selection, () => $createParagraphNode());
-          return;
+  const formatBlock = useCallback(
+    (type: "paragraph" | "h1" | "h2" | "quote") => {
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          if (blockType === type && type !== "paragraph") {
+            $setBlocksType(selection, () => $createParagraphNode());
+            return;
+          }
+          if (type === "paragraph") {
+            $setBlocksType(selection, () => $createParagraphNode());
+          } else if (type === "quote") {
+            $setBlocksType(selection, () => $createQuoteNode());
+          } else {
+            $setBlocksType(selection, () => $createHeadingNode(type));
+          }
         }
-        if (type === "paragraph") {
-          $setBlocksType(selection, () => $createParagraphNode());
-        } else if (type === "quote") {
-          $setBlocksType(selection, () => $createQuoteNode());
-        } else {
-          $setBlocksType(selection, () => $createHeadingNode(type));
+      });
+    },
+    [editor, blockType],
+  );
+
+  useEffect(() => {
+    return editor.registerCommand(
+      KEY_DOWN_COMMAND,
+      (event: KeyboardEvent) => {
+        if (event.ctrlKey) {
+          // Ctrl+K pour les liens
+          if (event.key === "k") {
+            event.preventDefault();
+            insertLink();
+            return true;
+          }
+          // Ctrl+Alt+1 pour H1
+          if (event.altKey && event.key === "1") {
+            event.preventDefault();
+            formatBlock("h1");
+            return true;
+          }
         }
-      }
-    });
-  };
+        return false;
+      },
+      COMMAND_PRIORITY_CRITICAL,
+    );
+  }, [editor, insertLink, formatBlock]);
 
   const formatList = (type: "bullet" | "number") => {
     if (type === "bullet") {
@@ -513,6 +567,30 @@ function ToolbarPlugin() {
 
       <button
         type="button"
+        onClick={insertLink}
+        className={isLink ? "active" : ""}
+        aria-label="Insérer un lien"
+        title="Insérer un lien (Ctrl+K)"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <title>Insérer un lien</title>
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72" />
+        </svg>
+      </button>
+
+      <button
+        type="button"
         onClick={() => formatText("bold")}
         className={isBold ? "active" : ""}
         aria-label="Mettre en gras"
@@ -686,6 +764,77 @@ function ToolbarPlugin() {
   );
 }
 
+function ClickableLinkPlugin(): null {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    const editorRootElement = editor.getRootElement();
+
+    // Fonction pour gérer le clic
+    const onClick = (event: MouseEvent) => {
+      const link = (event.target as HTMLElement).closest("a");
+
+      if (link) {
+        event.preventDefault();
+        const url = link.getAttribute("href");
+        if (url) {
+          const wantsToVisit = window.confirm(
+            `Vous êtes sur le point de visiter le lien suivant :\n\n${url}\n\nVoulez-vous continuer ?`,
+          );
+          if (wantsToVisit) {
+            window.open(url, "_blank", "noopener noreferrer");
+          }
+        }
+      }
+    };
+
+    // Attacher et détacher l'écouteur
+    const rootElement = editorRootElement;
+    rootElement?.addEventListener("click", onClick);
+
+    return () => {
+      rootElement?.removeEventListener("click", onClick);
+    };
+  }, [editor]);
+
+  return null;
+}
+
+function AutoLinkPlugin(): null {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    const urlRegExp = new RegExp(/^https?:\/\/\S+$/);
+
+    const onPaste = (event: ClipboardEvent) => {
+      const pastedText = event.clipboardData?.getData("text/plain")?.trim();
+
+      if (pastedText && urlRegExp.test(pastedText)) {
+        event.preventDefault();
+        editor.update(() => {
+          const selection = $getSelection();
+          if ($isRangeSelection(selection)) {
+            if (selection.isCollapsed()) {
+              const linkNode = $createLinkNode(pastedText);
+              const textNode = $createTextNode(pastedText);
+              linkNode.append(textNode);
+              selection.insertNodes([linkNode]);
+            } else {
+              editor.dispatchCommand(TOGGLE_LINK_COMMAND, pastedText);
+            }
+          }
+        });
+        return true;
+      }
+      return false;
+    };
+
+    return editor.registerCommand(PASTE_COMMAND, onPaste, COMMAND_PRIORITY_LOW);
+  }, [editor]);
+
+  return null;
+}
+
 interface LexicalEditorProps {
   onChange: (editorState: string) => void;
   id?: string;
@@ -712,9 +861,6 @@ export function LexicalEditor({
     (editorState: EditorState) => {
       const editorStateJSON = editorState.toJSON();
       const firstChild = editorStateJSON.root.children[0];
-
-      // L'éditeur est considéré non-vide s'il a plus d'un bloc,
-      // ou si son unique bloc a du contenu.
       const isNonEmpty =
         editorStateJSON.root.children.length > 1 ||
         (firstChild &&
@@ -724,7 +870,7 @@ export function LexicalEditor({
       if (isNonEmpty) {
         onChange(JSON.stringify(editorStateJSON));
       } else {
-        onChange(""); // Envoyer une chaîne vide si le contenu est effacé
+        onChange("");
       }
     },
     [onChange],
@@ -749,6 +895,8 @@ export function LexicalEditor({
           <HistoryPlugin />
           <ListPlugin />
           <LinkPlugin />
+          <ClickableLinkPlugin />
+          <AutoLinkPlugin />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
           <OnChangePlugin onChange={handleStateChange} />
         </div>
