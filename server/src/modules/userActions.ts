@@ -1,12 +1,11 @@
 import crypto from "node:crypto";
 import bcrypt from "bcrypt";
-import type { RequestHandler } from "express";
-import type { NextFunction, Response } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import { Op } from "sequelize";
 import type { AuthRequest } from "../middleware/isConnected";
-import { User } from "../models/_index";
+import { Posts, User } from "../models/_index";
 
 interface MulterFiles {
   avatar?: Express.Multer.File[];
@@ -17,7 +16,9 @@ interface MulterFiles {
 const browse: RequestHandler = async (req, res, next) => {
   try {
     const users = await User.findAll({
-      attributes: { exclude: ["password", "reset_token", "reset_token_expiry"] },
+      attributes: {
+        exclude: ["password", "reset_token", "reset_token_expiry"],
+      },
     });
     res.json(users);
   } catch (err) {
@@ -31,7 +32,9 @@ const read: RequestHandler = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const user = await User.findByPk(userId, {
-      attributes: { exclude: ["password", "reset_token", "reset_token_expiry"] },
+      attributes: {
+        exclude: ["password", "reset_token", "reset_token_expiry"],
+      },
     });
 
     if (user == null) {
@@ -142,20 +145,22 @@ const login: RequestHandler = async (req, res, next) => {
 
     const user = await User.findOne({ where: { public_name } });
     if (!user) {
-      return res.status(401).json({ error: "Identifiant ou mot de passe incorrect" });
+      return res
+        .status(401)
+        .json({ error: "Identifiant ou mot de passe incorrect" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Identifiant ou mot de passe incorrect" });
+      return res
+        .status(401)
+        .json({ error: "Identifiant ou mot de passe incorrect" });
     }
 
     const jwtSecret = process.env.JWT_SECRET as string;
-    const token = jwt.sign(
-      { id: user.id, isAdmin: user.is_admin },
-      jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "24h" } as jwt.SignOptions,
-    );
+    const token = jwt.sign({ id: user.id, isAdmin: user.is_admin }, jwtSecret, {
+      expiresIn: process.env.JWT_EXPIRES_IN || "24h",
+    } as jwt.SignOptions);
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
     const avatarUrl = user.avatar_url ? `${baseUrl}${user.avatar_url}` : null;
@@ -212,7 +217,9 @@ const check: RequestHandler = async (req: AuthRequest, res, next) => {
     }
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
-    const avatarUrl = userFromDb.avatar_url ? `${baseUrl}${userFromDb.avatar_url}` : null;
+    const avatarUrl = userFromDb.avatar_url
+      ? `${baseUrl}${userFromDb.avatar_url}`
+      : null;
 
     res.json({
       authenticated: true,
@@ -272,7 +279,9 @@ const resetPassword: RequestHandler = async (req, res, next) => {
     const { token, password } = req.body;
 
     if (!password || password.length < 6) {
-      return res.status(400).json({ message: "Le mot de passe doit faire au moins 6 caractères." });
+      return res
+        .status(400)
+        .json({ message: "Le mot de passe doit faire au moins 6 caractères." });
     }
 
     const user = await User.findOne({
@@ -297,7 +306,11 @@ const resetPassword: RequestHandler = async (req, res, next) => {
   }
 };
 
-const getMe: RequestHandler = async (req: AuthRequest, res: Response, next: NextFunction) => {
+const getMe: RequestHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     if (!req.user?.id) {
       return res.status(401).json({ message: "Non authentifié" });
@@ -312,13 +325,14 @@ const getMe: RequestHandler = async (req: AuthRequest, res: Response, next: Next
     }
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
-    const absoluteAvatarUrl = user.avatar_url ? `${baseUrl}${user.avatar_url}` : null;
+    const absoluteAvatarUrl = user.avatar_url
+      ? `${baseUrl}${user.avatar_url}`
+      : null;
 
     res.json({
       ...user.get(),
       avatar_url: absoluteAvatarUrl,
     });
-
   } catch (err) {
     next(err);
   }
@@ -354,9 +368,81 @@ const updateAvatar: RequestHandler = async (req: AuthRequest, res, next) => {
   }
 };
 
+const readPublicProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { publicName } = req.params;
+
+    // 1. Trouver l'utilisateur par son pseudo
+    const user = await User.findOne({
+      where: { public_name: publicName },
+      // On récupère son ID pour trouver ses posts, mais on ne l'exposera pas
+      attributes: ["id", "public_name", "avatar_url"],
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur non trouvé." });
+    }
+
+    // 2. Récupérer uniquement ses articles APPROUVÉS
+    const approvedPosts = await Posts.findAll({
+      where: {
+        user_id: user.id,
+        status: "approved",
+      },
+      // On sélectionne uniquement les champs nécessaires pour la liste publique
+      attributes: ["title", "subtitle", "slug", "publishedAt"],
+      order: [["publishedAt", "DESC"]],
+    });
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const absoluteAvatarUrl = user.avatar_url
+      ? `${baseUrl}${user.avatar_url}`
+      : null;
+
+    // 3. Construire la réponse finale avec uniquement les données publiques
+    res.json({
+      public_name: user.public_name,
+      avatar_url: absoluteAvatarUrl,
+      posts: approvedPosts,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// --- NOUVELLE Action pour que l'utilisateur connecté récupère ses propres articles ---
+const getMyPosts = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Non authentifié" });
+    }
+
+    const userPosts = await Posts.findAll({
+      where: { user_id: userId },
+      // On récupère les infos utiles pour la page de profil privée
+      attributes: ["title", "slug", "status", "createdAt", "rejection_reason"],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.json(userPosts);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   browse,
   read,
+  readPublicProfile,
   add,
   edit,
   destroy,
@@ -367,5 +453,6 @@ export default {
   resetPassword,
   check,
   getMe,
+  getMyPosts,
   updateAvatar,
 };

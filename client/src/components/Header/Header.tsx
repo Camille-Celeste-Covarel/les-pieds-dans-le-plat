@@ -1,13 +1,11 @@
 import { isMobile } from "react-device-detect";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { useOverlay } from "../../contexts/OverlayContext/OverlayContext";
 import { ProfileDropdown } from "./ProfileDropdown";
 import "./Header.css";
 
 function Header() {
   const { isAdmin } = useAuth();
-  const { openOverlay } = useOverlay();
 
   const renderDesktopNav = () => (
     <div className="desktop-nav-container">
@@ -17,13 +15,9 @@ function Header() {
         <Link to="/exprimez-vous">Exprimez-vous</Link>
         <Link to="/le-concept">Le Concept</Link>
         {isAdmin && (
-          <button
-            type="button"
-            className="desktop-nav-link-button"
-            onClick={() => openOverlay("#admin")}
-          >
+          <Link to="/admin/dashboard" className="desktop-nav-link-button">
             Dashboard Admin
-          </button>
+          </Link>
         )}
       </nav>
       <ProfileDropdown />

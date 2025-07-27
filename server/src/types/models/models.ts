@@ -24,22 +24,29 @@ export type UserCreationAttributes = Optional<
 >;
 
 export interface PostsAttributes {
-  author?: UserAttributes;
+  tags: string;
   id: string;
   user_id: string;
   title: string;
-  status: string;
-  subtitle?: string | null;
+  status: "pending_review" | "approved" | "rejected";
+  subtitle: string | null;
   content: string;
-  publishedAt?: Date | null;
+  slug: string;
+  rejection_reason: string | null;
+  admin_context: string | null;
+  publishedAt: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
+  author?: UserAttributes;
 }
 export type PostsCreationAttributes = Optional<
   PostsAttributes,
   | "id"
   | "status"
   | "subtitle"
+  | "slug"
+  | "rejection_reason"
+  | "admin_context"
   | "publishedAt"
   | "createdAt"
   | "updatedAt"

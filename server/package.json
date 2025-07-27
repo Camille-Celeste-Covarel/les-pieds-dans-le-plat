@@ -12,6 +12,8 @@
     "test": "cross-env NODE_ENV=test jest --verbose"
   },
   "dependencies": {
+    "@lexical/headless": "^0.33.1",
+    "@lexical/html": "^0.33.1",
     "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.15.4",
     "@types/sequelize": "^4.28.20",
@@ -21,6 +23,7 @@
     "csv-parser": "^3.2.0",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
+    "jsdom": "^26.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
@@ -28,6 +31,7 @@
     "pg": "^8.16.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7",
+    "slugify": "^1.6.6",
     "uuid": "^8.3.2",
     "ws": "^8.18.3"
   },
@@ -39,6 +43,7 @@
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
+    "@types/jsdom": "^21.1.7",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.13",
     "@types/nodemailer": "^6.4.17",

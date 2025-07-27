@@ -1,6 +1,7 @@
+import type React from "react"; // 1. On importe React pour corriger le bug
 import { useState } from "react";
+import { isMobile } from "react-device-detect";
 import { useNavigate } from "react-router";
-import { isMobile } from "react-device-detect"; // <-- Importer isMobile
 import { useAuth } from "../contexts/AuthContext.tsx";
 import { useOverlay } from "../contexts/OverlayContext/OverlayContext.tsx";
 import "../stylesheets/loginpage.css";
@@ -9,6 +10,7 @@ function LoginPage() {
   const [public_name, setPublicName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // 2. On ajoute l'état de chargement
   const navigate = useNavigate();
   const { login } = useAuth();
   const { openOverlay, closeOverlay } = useOverlay();
@@ -16,6 +18,7 @@ function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
     try {
       const response = await fetch(
@@ -39,9 +42,11 @@ function LoginPage() {
       } else {
         setError("Identifiant ou mot de passe incorrect");
       }
-    } catch (error) {
-      console.error("Erreur: ", error);
-      setError("Erreur de connexion");
+    } catch (err) {
+      console.error("Erreur: ", err);
+      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,6 +79,7 @@ function LoginPage() {
               onChange={(e) => setPublicName(e.target.value)}
               required
               placeholder="Tapez votre pseudonyme"
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -88,11 +94,13 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Tapez votre mot de passe"
+              disabled={isLoading}
             />
             <button
               type="button"
               className="login-forgot-password"
               onClick={handleForgotPasswordClick}
+              disabled={isLoading}
             >
               Mot de passe oublié ?
             </button>
@@ -101,8 +109,8 @@ function LoginPage() {
 
         {error && <div className="error-message">{error}</div>}
 
-        <button type="submit" className="button-classic">
-          Se connecter
+        <button type="submit" className="button-classic" disabled={isLoading}>
+          {isLoading ? "Connexion..." : "Se connecter"}
         </button>
 
         <div className="separator">
@@ -113,6 +121,7 @@ function LoginPage() {
           type="button"
           className="button-classic"
           onClick={handleRegisterClick}
+          disabled={isLoading}
         >
           S'inscrire !
         </button>

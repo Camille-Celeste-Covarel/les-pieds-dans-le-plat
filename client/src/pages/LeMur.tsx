@@ -1,62 +1,56 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import "../stylesheets/LeMur.css";
 
-interface ApprovedPost {
+interface PostOnTheWall {
   id: string;
   title: string;
   subtitle: string | null;
+  slug: string;
+  contentPreview: string;
   author: {
     public_name: string;
     avatar_url: string | null;
   };
+  tags: {
+    id: number;
+    name: string;
+  }[];
 }
 
+const fetchApprovedPosts = async (): Promise<PostOnTheWall[]> => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`);
+  if (!response.ok) {
+    throw new Error("Impossible de charger les articles.");
+  }
+  return response.json();
+};
+
 function LeMur() {
-  const [posts, setPosts] = useState<ApprovedPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchApprovedPosts = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // Cette route est publique et ne retourne que les articles "approved"
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/posts`,
-        );
-        if (!response.ok) {
-          throw new Error("Impossible de charger les articles.");
-        }
-        const data = await response.json();
-        setPosts(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Une erreur est survenue.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchApprovedPosts();
-  }, []);
+  const {
+    data: posts,
+    isLoading,
+    error,
+  } = useQuery<PostOnTheWall[], Error>({
+    queryKey: ["approvedPosts"],
+    queryFn: fetchApprovedPosts,
+  });
 
   if (isLoading) return <p>Chargement du mur...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+
+  if (error) return <p style={{ color: "red" }}>{error.message}</p>;
 
   return (
     <div className="le-mur-container">
       <h1>Le Mur</h1>
       <p>Découvrez les dernières publications de notre communauté.</p>
 
-      {posts.length === 0 ? (
+      {!posts || posts.length === 0 ? (
         <p>Il n'y a encore rien sur le mur. Soyez le premier à écrire !</p>
       ) : (
         <div className="le-mur-grid">
           {posts.map((post) => (
-            <Link to={`/posts/${post.id}`} key={post.id} className="post-card">
+            <article key={post.id} className="post-card">
               <div className="post-card-header">
                 {post.author.avatar_url && (
                   <img
@@ -65,13 +59,33 @@ function LeMur() {
                     className="author-avatar"
                   />
                 )}
-                <span className="author-name">{post.author.public_name}</span>
+                <Link
+                  to={`/profil/${post.author.public_name}`}
+                  className="author-name"
+                >
+                  {post.author.public_name}
+                </Link>
               </div>
               <div className="post-card-body">
                 <h2>{post.title}</h2>
-                {post.subtitle && <p>{post.subtitle}</p>}
+                {post.subtitle && (
+                  <p className="post-subtitle">{post.subtitle}</p>
+                )}
+                <p className="post-preview">{post.contentPreview}</p>
               </div>
-            </Link>
+              <div className="post-card-footer">
+                <div className="tags-container">
+                  {post.tags.map((tag) => (
+                    <span key={tag.id} className="tag-pill">
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+                <Link to={`/${post.slug}`} className="read-more-link">
+                  Voir ce texte
+                </Link>
+              </div>
+            </article>
           ))}
         </div>
       )}
