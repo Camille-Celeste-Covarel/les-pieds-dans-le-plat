@@ -5,9 +5,9 @@ import "../stylesheets/LeMur.css";
 interface PostOnTheWall {
   id: string;
   title: string;
-  subtitle: string | null;
+  hook: string | null;
   slug: string;
-  contentPreview: string;
+  is_featured: boolean;
   author: {
     public_name: string;
     avatar_url: string | null;
@@ -18,7 +18,7 @@ interface PostOnTheWall {
   }[];
 }
 
-const fetchApprovedPosts = async (): Promise<PostOnTheWall[]> => {
+const fetchLatestPosts = async (): Promise<PostOnTheWall[]> => {
   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`);
   if (!response.ok) {
     throw new Error("Impossible de charger les articles.");
@@ -32,8 +32,8 @@ function LeMur() {
     isLoading,
     error,
   } = useQuery<PostOnTheWall[], Error>({
-    queryKey: ["approvedPosts"],
-    queryFn: fetchApprovedPosts,
+    queryKey: ["latestPosts"],
+    queryFn: fetchLatestPosts,
   });
 
   if (isLoading) return <p>Chargement du mur...</p>;
@@ -50,7 +50,10 @@ function LeMur() {
       ) : (
         <div className="le-mur-grid">
           {posts.map((post) => (
-            <article key={post.id} className="post-card">
+            <article
+              key={post.id}
+              className={`post-card ${post.is_featured ? "featured" : ""}`}
+            >
               <div className="post-card-header">
                 {post.author.avatar_url && (
                   <img
@@ -68,10 +71,7 @@ function LeMur() {
               </div>
               <div className="post-card-body">
                 <h2>{post.title}</h2>
-                {post.subtitle && (
-                  <p className="post-subtitle">{post.subtitle}</p>
-                )}
-                <p className="post-preview">{post.contentPreview}</p>
+                {post.hook && <p className="post-subtitle">{post.hook}</p>}
               </div>
               <div className="post-card-footer">
                 <div className="tags-container">

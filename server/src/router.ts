@@ -1,6 +1,5 @@
 import path from "node:path";
 import express from "express";
-import upload from "./config/multer";
 import isAdmin from "./middleware/isAdmin";
 import authenticateToken from "./middleware/isConnected";
 import uploadAvatar from "./middleware/uploadAvatar";
@@ -24,7 +23,6 @@ router.post(
   userActions.register,
 );
 router.post("/auth/logout", userActions.logout);
-router.get("/auth/check", authenticateToken, userActions.check);
 router.post("/auth/forgot-password", userActions.forgotPassword);
 router.post("/auth/reset-password", userActions.resetPassword);
 
@@ -55,6 +53,8 @@ router.patch(
 
 router.post("/posts", postsActions.create);
 
+router.get("/auth/check", userActions.check);
+
 /* ************************************************************************* */
 // 👑 Wall d'administration - Tout ce qui suit nécessite d'être Admin
 /* ************************************************************************* */
@@ -72,9 +72,12 @@ router.post("/users", userActions.add);
 router.put("/users/:id", userActions.edit);
 router.delete("/users/:id", userActions.destroy);
 
+// Routes pour la gestion des articles par l'admin
 router.get("/admin/posts", postsActions.browseForAdmin);
 router.patch("/admin/posts/:id/status", postsActions.updateStatus);
 router.patch("/admin/posts/:id/context", postsActions.updateContext);
+router.patch("/admin/posts/:id/feature", postsActions.toggleFeature);
+router.delete("/admin/posts/:id", postsActions.destroy);
 
 // Démarrage des tâches de fond (cron jobs)
 startCronJobs();

@@ -12,7 +12,7 @@ interface Tag {
 
 interface NewPostPayload {
   title: string;
-  subtitle: string;
+  hook: string;
   content: string;
   tagIds: number[];
 }
@@ -43,7 +43,7 @@ const createPost = async (payload: NewPostPayload) => {
 
 function ExprimezVous() {
   const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
+  const [hook, setHook] = useState("");
   const [editorState, setEditorState] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [editorKey, setEditorKey] = useState(0);
@@ -66,7 +66,7 @@ function ExprimezVous() {
       addToast("Votre article a bien été soumis pour relecture !", "success");
       void queryClient.invalidateQueries({ queryKey: ["myPosts"] });
       setTitle("");
-      setSubtitle("");
+      setHook("");
       setEditorState("");
       setSelectedTags([]);
       setEditorKey((prevKey) => prevKey + 1);
@@ -91,6 +91,10 @@ function ExprimezVous() {
       addToast("Le titre est obligatoire.", "error");
       return;
     }
+    if (!hook.trim()) {
+      addToast("L'accroche est obligatoire.", "error");
+      return;
+    }
     if (!editorState || editorState.length < 50) {
       addToast(
         "Le contenu de l'article est obligatoire et doit faire au moins 50 caractères.",
@@ -101,7 +105,7 @@ function ExprimezVous() {
 
     postMutation.mutate({
       title,
-      subtitle,
+      hook,
       content: editorState,
       tagIds: selectedTags,
     });
@@ -130,15 +134,20 @@ function ExprimezVous() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="subtitle">Sous-titre (optionnel)</label>
-          <input
-            type="text"
-            id="subtitle"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            placeholder="Une phrase d'accroche"
-            disabled={postMutation.isPending}
-          />
+          <label htmlFor="hook">Accroche de l'article</label>
+          <div className="form-group-with-counter">
+            <textarea
+              id="hook"
+              value={hook}
+              onChange={(e) => setHook(e.target.value)}
+              placeholder="Rédigez une courte phrase (300 caractères max) qui donnera envie de lire votre texte. Elle servira d'aperçu."
+              rows={3}
+              maxLength={300}
+              required
+              disabled={postMutation.isPending}
+            />
+            <small className="char-counter">{hook.length} / 300</small>
+          </div>
         </div>
 
         <fieldset className="form-group" disabled={postMutation.isPending}>

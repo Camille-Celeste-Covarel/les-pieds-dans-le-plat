@@ -24,12 +24,12 @@ export type UserCreationAttributes = Optional<
 >;
 
 export interface PostsAttributes {
-  tags: string;
   id: string;
   user_id: string;
   title: string;
   status: "pending_review" | "approved" | "rejected";
-  subtitle: string | null;
+  hook: string | null;
+  is_featured: boolean;
   content: string;
   slug: string;
   rejection_reason: string | null;
@@ -43,7 +43,8 @@ export type PostsCreationAttributes = Optional<
   PostsAttributes,
   | "id"
   | "status"
-  | "subtitle"
+  | "hook"
+  | "is_featured"
   | "slug"
   | "rejection_reason"
   | "admin_context"

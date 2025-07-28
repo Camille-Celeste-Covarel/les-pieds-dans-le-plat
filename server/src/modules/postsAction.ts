@@ -3,20 +3,26 @@ import slugify from "slugify";
 import type { AuthRequest } from "../middleware/isConnected";
 import { Posts, User } from "../models/_index";
 import { convertLexicalToHtml } from "../tools/lexicalToHtml";
+import type { PostsAttributes } from "../types/models/models";
+
+type PostWithAssociations = Omit<PostsAttributes, "author"> & {
+  tags?: { id: number; name: string }[];
+  author?: { public_name: string; avatar_url: string | null };
+};
 
 // --- Action pour créer un nouvel article (celle que vous aviez déjà) ---
 const create = async (req: AuthRequest, res: Response) => {
-  const { title, subtitle, content, tagIds } = req.body;
+  const { title, hook, content, tagIds } = req.body;
   const userId = req.user?.id;
 
   if (!userId) {
     return res.status(403).json({ error: "Token invalide ou corrompu." });
   }
 
-  if (!title || !content) {
+  if (!title || !content || !hook) {
     return res
       .status(400)
-      .json({ error: "Le titre et le contenu sont obligatoires." });
+      .json({ error: "Le titre, l'accroche et le contenu sont obligatoires." });
   }
 
   try {
@@ -41,7 +47,7 @@ const create = async (req: AuthRequest, res: Response) => {
     const newPost = await Posts.create({
       user_id: userId,
       title,
-      subtitle: subtitle || null,
+      hook: hook || null,
       content,
       slug,
       status: "pending_review",
@@ -80,16 +86,21 @@ const read = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: "Article non trouvé." });
     }
 
-    // Règle de sécurité : un article non approuvé n'est visible que par un admin
-    if (post.status !== "approved" && !req.user?.isAdmin) {
+    // --- LOGIQUE DE SÉCURITÉ CORRIGÉE ET CLARIFIÉE ---
+    // On vérifie si l'utilisateur a le droit de voir le post.
+    const canView =
+      post.status === "approved" || // Tout le monde peut voir un post approuvé
+      req.user?.isAdmin || // Un admin peut tout voir
+      post.user_id === req.user?.id; // L'auteur peut voir son propre post
+
+    if (!canView) {
       return res
         .status(403)
         .json({ error: "Accès non autorisé à cette ressource." });
     }
 
-    // Construire l'URL absolue pour l'avatar de l'auteur
     const baseUrl = `${req.protocol}://${req.get("host")}`;
-    const postJson = post.toJSON();
+    const postJson = post.get({ plain: true }) as PostWithAssociations;
     if (postJson.author?.avatar_url) {
       postJson.author.avatar_url = `${baseUrl}${postJson.author.avatar_url}`;
     }
@@ -105,29 +116,10 @@ const read = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// --- Action pour récupérer les articles (mise à jour) ---
 const browse = async (req: AuthRequest, res: Response) => {
   try {
-    const { status } = req.query;
-    const whereCondition: { status?: string } = {};
-
-    if (
-      status &&
-      ["pending_review", "approved", "rejected"].includes(status as string)
-    ) {
-      if (req.user?.isAdmin) {
-        whereCondition.status = status as string;
-      } else {
-        return res
-          .status(403)
-          .json({ error: "Accès non autorisé à ce filtre." });
-      }
-    } else if (!req.user?.isAdmin) {
-      whereCondition.status = "approved";
-    }
-
     const posts = await Posts.findAll({
-      where: whereCondition,
+      where: { status: "approved" },
       include: [
         {
           association: "author",
@@ -140,32 +132,27 @@ const browse = async (req: AuthRequest, res: Response) => {
         },
       ],
       order: [
+        ["is_featured", "DESC"],
         ["publishedAt", "DESC"],
-        ["createdAt", "DESC"],
       ],
     });
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
     const formattedPosts = posts.map((post) => {
-      const postJson = post.toJSON();
+      const postJson = post.get({ plain: true }) as PostWithAssociations;
+
       if (postJson.author?.avatar_url) {
         postJson.author.avatar_url = `${baseUrl}${postJson.author.avatar_url}`;
       }
 
-      const htmlContent = convertLexicalToHtml(postJson.content);
-      const plainTextContent = htmlContent.replace(/<[^>]*>?/gm, "");
-      const contentPreview =
-        plainTextContent.substring(0, 400) +
-        (plainTextContent.length > 400 ? "..." : "");
-
       return {
         id: postJson.id,
         title: postJson.title,
-        subtitle: postJson.subtitle,
+        hook: postJson.hook,
         slug: postJson.slug,
+        is_featured: postJson.is_featured,
         author: postJson.author,
         tags: postJson.tags,
-        contentPreview,
       };
     });
 
@@ -176,7 +163,42 @@ const browse = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// --- Action pour un admin pour changer le statut d'un article ---
+// --- Action pour un admin pour récupérer les articles pour le dashboard (MISE À JOUR) ---
+const browseForAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const { status } = req.query;
+    const whereCondition: { status?: string } = {};
+
+    if (
+      status &&
+      ["pending_review", "approved", "rejected"].includes(status as string)
+    ) {
+      whereCondition.status = status as string;
+    }
+
+    const posts = await Posts.findAll({
+      where: whereCondition,
+      attributes: ["id", "title", "slug", "hook"],
+      include: [
+        {
+          association: "author",
+          attributes: ["public_name"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.json(posts);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des articles pour l'admin :",
+      error,
+    );
+    res.status(500).json({ error: "Une erreur interne est survenue." });
+  }
+};
+
+// --- Action pour un admin pour changer le statut d'un article (inchangée) ---
 const updateStatus = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { status, rejection_reason } = req.body;
@@ -246,41 +268,53 @@ const updateContext = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// --- Action pour un admin pour récupérer tous les articles pour le dashboard ---
-const browseForAdmin = async (req: AuthRequest, res: Response) => {
-  try {
-    const { status } = req.query;
-    const whereCondition: { status?: string } = {};
+const toggleFeature = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
 
-    if (
-      status &&
-      ["pending_review", "approved", "rejected"].includes(status as string)
-    ) {
-      whereCondition.status = status as string;
+  try {
+    const post = await Posts.findByPk(id);
+    if (!post) {
+      return res.status(404).json({ error: "Article non trouvé." });
     }
 
-    const posts = await Posts.findAll({
-      where: whereCondition,
-      attributes: ["id", "title", "slug", "status", "createdAt", "publishedAt"],
-      include: [
-        {
-          association: "author",
-          attributes: ["public_name"],
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-    });
+    if (post.status !== "approved") {
+      return res.status(400).json({
+        error: "Seul un article approuvé peut être mis en avant.",
+      });
+    }
 
-    res.json(posts);
+    // On inverse la valeur du booléen
+    post.is_featured = !post.is_featured;
+    await post.save();
+
+    res.status(200).json({
+      message: "Statut de mise en avant mis à jour.",
+      post,
+    });
   } catch (error) {
-    console.error(
-      "Erreur lors de la récupération des articles pour l'admin :",
-      error,
-    );
+    console.error("Erreur lors de la mise en avant de l'article :", error);
     res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
+const destroy = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const post = await Posts.findByPk(id);
+    if (!post) {
+      return res.status(404).json({ error: "Article non trouvé." });
+    }
+
+    await post.destroy();
+    res.status(200).json({ message: "Article supprimé avec succès." });
+  } catch (error) {
+    console.error("Erreur lors de la suppression de l'article :", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
+  }
+};
+
+// MODIFIÉ: On exporte les nouvelles actions
 export default {
   create,
   read,
@@ -288,4 +322,6 @@ export default {
   updateStatus,
   updateContext,
   browseForAdmin,
+  toggleFeature,
+  destroy,
 };

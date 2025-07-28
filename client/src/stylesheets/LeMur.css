@@ -1,7 +1,20 @@
 .le-mur-container {
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 2rem;
+  padding: 0 2rem 2rem;
+}
+
+.le-mur-container h1 {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.le-mur-container > p {
+  color: #6c757d;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
 }
 
 .le-mur-grid {
@@ -11,7 +24,6 @@
   margin-top: 2rem;
 }
 
-/* La carte n'est plus un lien, mais un article sémantique */
 .post-card {
   background-color: #fff;
   border: 1px solid #e0e0e0;
@@ -26,6 +38,11 @@
 
 .post-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Style spécifique pour les cartes "à la une" */
+.post-card.featured {
+  border: 2px solid var(--fondamental-color);
 }
 
 .post-card-header {
@@ -45,10 +62,9 @@
 
 .author-name {
   font-weight: 600;
-  text-decoration: none;
   color: var(--fondamental-color);
+  text-decoration: none;
 }
-
 .author-name:hover {
   text-decoration: underline;
 }
@@ -67,18 +83,6 @@
   margin: 0 0 1rem 0;
   color: #666;
   font-style: italic;
-}
-
-.post-card-body .post-preview {
-  margin: 0;
-  color: #333;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .post-card-footer {

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+// On importe Link pour la navigation en pleine page
 import { Link } from "react-router-dom";
 import { useOverlay } from "../../contexts/OverlayContext/OverlayContext";
 import "../../stylesheets/Admin.css";
@@ -9,8 +10,7 @@ interface AdminPost {
   id: string;
   title: string;
   slug: string;
-  status: "pending_review" | "approved" | "rejected";
-  createdAt: string;
+  hook: string | null;
   author: {
     public_name: string;
   };
@@ -23,13 +23,9 @@ const fetchAdminPosts = async (
 ): Promise<AdminPost[]> => {
   const response = await fetch(
     `${import.meta.env.VITE_API_URL}/api/admin/posts?status=${status}`,
-    {
-      credentials: "include",
-    },
+    { credentials: "include" },
   );
-  if (!response.ok) {
-    throw new Error("Impossible de récupérer les articles.");
-  }
+  if (!response.ok) throw new Error("Impossible de récupérer les articles.");
   return response.json();
 };
 
@@ -56,7 +52,6 @@ function PostValidation() {
   return (
     <>
       <h2>Validation des Articles</h2>
-
       <div className="admin-filters">
         {filters.map((filter) => (
           <button
@@ -80,9 +75,9 @@ function PostValidation() {
           <thead>
             <tr>
               <th>Titre</th>
+              <th>Accroche</th>
               <th>Auteur</th>
-              <th>Date de soumission</th>
-              <th>Ouvrir dans</th>
+              <th style={{ textAlign: "center" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -90,28 +85,24 @@ function PostValidation() {
               posts.map((post) => (
                 <tr key={post.id}>
                   <td>{post.title}</td>
+                  <td className="hook-cell">{post.hook}</td>
                   <td>{post.author.public_name}</td>
-                  <td>
-                    {new Date(post.createdAt).toLocaleDateString("fr-FR")}
-                  </td>
-                  <td>
-                    <div className="admin-actions-cell">
-                      <button
-                        type="button"
-                        className="button-classic"
-                        onClick={() => openOverlay(`#/${post.slug}`)}
-                      >
-                        Overlay
-                      </button>
-                      <Link
-                        to={`/${post.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="button-classic"
-                      >
-                        Page
-                      </Link>
-                    </div>
+                  <td className="actions-cell">
+                    <button
+                      type="button"
+                      className="button-classic-outline"
+                      onClick={() => openOverlay(`#/${post.slug}`)}
+                    >
+                      Modérer (Overlay)
+                    </button>
+                    <Link
+                      to={`/${post.slug}`}
+                      className="button-classic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Voir (Pleine page)
+                    </Link>
                   </td>
                 </tr>
               ))

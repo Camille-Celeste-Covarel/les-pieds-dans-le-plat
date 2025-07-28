@@ -1,19 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
-import { useEffect, useState } from "react";
-import { FaShareAlt, FaUserCircle } from "react-icons/fa";
+import { useState } from "react";
+import { FaShareAlt, FaStar, FaUserCircle } from "react-icons/fa";
 import { Link, useLocation, useParams } from "react-router-dom";
+import AdminPostPanel from "./Admin/AdminPostPanel.tsx";
+import "./Admin/AdminPostPanel.css";
 import Modal from "../components/Modal/Modal";
 import { useAuth } from "../contexts/AuthContext";
+import { useOverlay } from "../contexts/OverlayContext/OverlayContext";
 import "../stylesheets/Post.css";
 import { useToastStore } from "../utils/useToast";
 
-interface FullPost {
+export interface FullPost {
   id: string;
   title: string;
-  subtitle: string | null;
+  hook: string | null;
   content: string;
   slug: string;
+  is_featured: boolean;
   status: "pending_review" | "approved" | "rejected";
   admin_context: string | null;
   publishedAt: string | null;
@@ -30,7 +34,6 @@ interface FullPost {
 // La fonction de fetch qui appelle l'API
 const fetchPost = async (slug: string): Promise<FullPost> => {
   const response = await fetch(
-    // L'URL de l'API reste la même, c'est le routeur Express qui gère le slug avec un '/'
     `${import.meta.env.VITE_API_URL}/api/articles/${slug}`,
     { credentials: "include" },
   );
@@ -41,7 +44,6 @@ const fetchPost = async (slug: string): Promise<FullPost> => {
   return response.json();
 };
 
-// --- Fonctions de mutation pour les actions admin ---
 const updatePostStatus = async (variables: {
   postId: string;
   status: "approved" | "rejected";
@@ -68,47 +70,23 @@ const updatePostStatus = async (variables: {
   return response.json();
 };
 
-const updatePostContext = async (variables: {
-  postId: string;
-  context: string;
-}) => {
-  const { postId, context } = variables;
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/admin/posts/${postId}/context`,
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ context }),
-    },
-  );
-  if (!response.ok) {
-    throw new Error("La mise à jour du contexte a échoué.");
-  }
-  return response.json();
-};
-
 function Post() {
-  // On garde useParams pour la compatibilité si on accède à la page directement
   const { author, title } = useParams<{ author: string; title: string }>();
   const location = useLocation();
+  useOverlay();
 
-  // On détermine le slug de manière robuste pour qu'il fonctionne dans l'overlay.
-  // 1. On essaie avec le hash (cas de l'overlay : #/auteur/titre)
   const slugFromHash = location.hash.startsWith("#/")
     ? location.hash.substring(2)
     : undefined;
-  // 2. On essaie avec les paramètres (cas d'un accès direct à l'URL)
   const slugFromParams = author && title ? `${author}/${title}` : undefined;
-  // On utilise le slug du hash en priorité, car c'est le signe qu'on est dans l'overlay.
   const slug = slugFromHash || slugFromParams;
+
+  const isInOverlay = !!slugFromHash;
 
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { addToast } = useToastStore();
 
-  // States pour l'UI
-  const [context, setContext] = useState("");
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
 
@@ -118,47 +96,22 @@ function Post() {
     isError,
     error,
   } = useQuery<FullPost, Error>({
-    // La clé de la query utilise le slug reconstruit pour être unique
     queryKey: ["post", slug],
-    // On appelle la fonction de fetch avec le slug reconstruit
     queryFn: () => fetchPost(slug as string),
-    // La requête ne s'active que si le slug a bien été reconstruit
     enabled: !!slug,
   });
 
-  const mutationOptions = {
-    onSuccess: () => {
-      // Rafraîchit les données de la page après une mutation réussie
-      void queryClient.invalidateQueries({ queryKey: ["post", slug] });
-      // Rafraîchit aussi la liste des posts dans le dashboard admin
-      void queryClient.invalidateQueries({ queryKey: ["adminPosts"] });
-    },
-    onError: (err: Error) => {
-      // Gère les erreurs de manière centralisée
-      addToast(err.message, "error");
-    },
-  };
-
   const statusMutation = useMutation({
     mutationFn: updatePostStatus,
-    ...mutationOptions,
-  });
-
-  const contextMutation = useMutation({
-    mutationFn: updatePostContext,
-    ...mutationOptions,
     onSuccess: () => {
-      mutationOptions.onSuccess();
-      addToast("Contexte mis à jour !", "success");
+      void queryClient.invalidateQueries({ queryKey: ["post", slug] });
+      void queryClient.invalidateQueries({ queryKey: ["adminPosts"] });
+      addToast("Statut mis à jour !", "success");
+    },
+    onError: (err: Error) => {
+      addToast(err.message, "error");
     },
   });
-
-  // Synchronise le state du contexte lorsque les données du post arrivent
-  useEffect(() => {
-    if (post) {
-      setContext(post.admin_context || "");
-    }
-  }, [post]);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -190,17 +143,22 @@ function Post() {
   const isApprovedForAdmin = user?.isAdmin && post.status === "approved";
 
   return (
-    <div className="post-page-container">
+    <div
+      className={isInOverlay ? "post-overlay-container" : "post-page-container"}
+    >
       {isPendingForAdmin && (
         <div className="admin-validation-panel">
-          <h3>Panneau de Modération</h3>
+          <h3>Panneau de Relecture</h3>
           <p>Cet article est en attente de relecture.</p>
           <div className="admin-actions">
             <button
               type="button"
               className="button-approve"
               onClick={() =>
-                statusMutation.mutate({ postId: post.id, status: "approved" })
+                statusMutation.mutate({
+                  postId: post.id,
+                  status: "approved",
+                })
               }
               disabled={statusMutation.isPending}
             >
@@ -218,10 +176,19 @@ function Post() {
         </div>
       )}
 
+      {isApprovedForAdmin && <AdminPostPanel post={post} />}
+
       <article className="post-content-area">
         <header className="post-header">
           <h1>{post.title}</h1>
-          {post.subtitle && <p className="post-subtitle">{post.subtitle}</p>}
+          {post.is_featured && (
+            <div className="featured-badge">
+              <FaStar />
+              <span>Choix de l'administration</span>
+            </div>
+          )}
+          {post.hook && <p className="post-hook">{post.hook}</p>}
+
           <div className="post-meta">
             <div className="author-info">
               {post.author.avatar_url ? (
@@ -248,13 +215,6 @@ function Post() {
             </div>
           </div>
         </header>
-
-        {post.admin_context && (
-          <div className="admin-context-box">
-            <strong>Le mot de l'administration :</strong>
-            <p>{post.admin_context}</p>
-          </div>
-        )}
 
         <div
           className="post-body"
@@ -285,34 +245,6 @@ function Post() {
           </div>
         </footer>
       </article>
-
-      {isApprovedForAdmin && (
-        <section className="admin-context-form-section">
-          <h3>Mot de l'administration</h3>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (post) contextMutation.mutate({ postId: post.id, context });
-            }}
-          >
-            <textarea
-              value={context}
-              onChange={(e) => setContext(e.target.value)}
-              placeholder="Ajoutez un contexte, une précision ou une mise en perspective ici..."
-              rows={4}
-            />
-            <button
-              type="submit"
-              className="button-classic"
-              disabled={contextMutation.isPending}
-            >
-              {contextMutation.isPending
-                ? "Enregistrement..."
-                : "Enregistrer le mot de l'admin"}
-            </button>
-          </form>
-        </section>
-      )}
 
       <Modal
         isOpen={isRejectionModalOpen}

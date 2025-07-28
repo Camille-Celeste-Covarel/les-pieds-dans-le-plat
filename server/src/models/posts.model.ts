@@ -15,7 +15,8 @@ export class Posts
   public user_id!: string;
   public title!: string;
   public status!: "pending_review" | "approved" | "rejected";
-  public subtitle!: string | null;
+  public hook!: string | null;
+  public is_featured!: boolean;
   public content!: string;
   public slug!: string;
   public rejection_reason!: string | null;
@@ -57,9 +58,14 @@ export class Posts
           allowNull: false,
           defaultValue: "pending_review",
         },
-        subtitle: {
-          type: DataTypes.STRING(255),
+        hook: {
+          type: DataTypes.STRING(300),
           allowNull: true,
+        },
+        is_featured: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
         },
         content: {
           type: DataTypes.TEXT,

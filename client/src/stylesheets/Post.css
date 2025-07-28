@@ -44,6 +44,12 @@
   gap: 1rem;
   margin-top: 1rem;
 }
+
+.admin-actions.general-actions {
+  border-top: 1px solid #ffe69c;
+  padding-top: 1rem;
+}
+
 .admin-actions .button-approve,
 .admin-actions .button-reject {
   padding: 0.5rem 1rem;
@@ -67,11 +73,37 @@
   margin: 0 0 0.5rem 0;
   line-height: 1.2;
 }
-.post-header .post-subtitle {
+.post-header .post-hook {
   font-size: 1.2rem;
   color: #6c757d;
   margin: 0 0 1.5rem 0;
   font-style: italic;
+  border-left: 3px solid #ccc;
+  padding-left: 1rem;
+}
+
+.featured-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 1rem 0;
+}
+
+.admin-context-box {
+  background-color: #eef2f7;
+  border-left: 4px solid var(--fondamental-color);
+  padding: 1rem 1.5rem;
+  margin: 2rem 0; /* Marge en haut et en bas */
+  border-radius: 0 4px 4px 0;
+}
+.admin-context-box p {
+  margin: 0.5rem 0 0 0;
 }
 
 .post-meta {
@@ -80,7 +112,7 @@
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
   padding: 1rem 0;
-  margin-bottom: 2rem;
+  margin-top: 2rem;
 }
 .author-info {
   display: flex;
@@ -106,23 +138,13 @@
   font-size: 0.9rem;
 }
 
-.admin-context-box {
-  background-color: #eef2f7;
-  border-left: 4px solid var(--fondamental-color);
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
-  border-radius: 0 4px 4px 0;
-}
-.admin-context-box p {
-  margin: 0.5rem 0 0 0;
-}
-
 .post-body {
   line-height: 1.7;
   font-size: 1.1rem;
   width: 100%;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  margin-top: 2rem;
 }
 .post-body p {
   margin-bottom: 1.5rem;

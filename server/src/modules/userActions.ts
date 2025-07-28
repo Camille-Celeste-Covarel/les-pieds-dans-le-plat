@@ -49,7 +49,7 @@ const read: RequestHandler = async (req, res, next) => {
 
 // L'opération BREAD : Add (Create)
 // Ajoute un nouvel utilisateur à la base de données.
-const add: RequestHandler = async (req, res, next) => {
+const add: RequestHandler = async (req, res) => {
   res.status(501).json({ message: "Fonction non implémentée." });
 };
 
@@ -352,8 +352,7 @@ const updateAvatar: RequestHandler = async (req: AuthRequest, res, next) => {
       return res.status(404).json({ message: "Utilisateur non trouvé." });
     }
 
-    const avatar_url = `/uploads/avatars/${req.file.filename}`;
-    user.avatar_url = avatar_url;
+    user.avatar_url = `/uploads/avatars/${req.file.filename}`;
     await user.save();
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
