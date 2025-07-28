@@ -1,8 +1,11 @@
 name: check
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  push: # <-- On change le déclencheur pour "push"
+    branches:
+      - develop
+      - dev
+  pull_request: # On peut garder les deux déclencheurs si on veut
     branches:
       - develop
       - dev
