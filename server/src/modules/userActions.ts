@@ -4,12 +4,9 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import { Op } from "sequelize";
-import type { AuthRequest } from "../middleware/isConnected";
 import { Posts, User } from "../models/_index";
-
-interface MulterFiles {
-  avatar?: Express.Multer.File[];
-}
+import type { AuthenticatedRequest } from "../types/middleware/middlewareTypes";
+import type { MulterFiles } from "../types/modules/modulesTypes";
 
 // L'opération BREAD : Browse (Read All)
 // Récupère tous les utilisateurs de la base de données.
@@ -202,7 +199,7 @@ const logout: RequestHandler = async (req, res, next) => {
   }
 };
 
-const check: RequestHandler = async (req: AuthRequest, res, next) => {
+const check: RequestHandler = async (req: AuthenticatedRequest, res, next) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: "Utilisateur non authentifié." });
@@ -307,7 +304,7 @@ const resetPassword: RequestHandler = async (req, res, next) => {
 };
 
 const getMe: RequestHandler = async (
-  req: AuthRequest,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ) => {
@@ -338,7 +335,11 @@ const getMe: RequestHandler = async (
   }
 };
 
-const updateAvatar: RequestHandler = async (req: AuthRequest, res, next) => {
+const updateAvatar: RequestHandler = async (
+  req: AuthenticatedRequest,
+  res,
+  next,
+) => {
   try {
     if (!req.user?.id) {
       return res.status(401).json({ message: "Non authentifié" });
@@ -415,7 +416,7 @@ const readPublicProfile = async (
 
 // --- NOUVELLE Action pour que l'utilisateur connecté récupère ses propres articles ---
 const getMyPosts = async (
-  req: AuthRequest,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ) => {

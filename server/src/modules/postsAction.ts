@@ -1,17 +1,12 @@
 import type { Response } from "express";
 import slugify from "slugify";
-import type { AuthRequest } from "../middleware/isConnected";
 import { Posts, User } from "../models/_index";
 import { convertLexicalToHtml } from "../tools/lexicalToHtml";
-import type { PostsAttributes } from "../types/models/models";
-
-type PostWithAssociations = Omit<PostsAttributes, "author"> & {
-  tags?: { id: number; name: string }[];
-  author?: { public_name: string; avatar_url: string | null };
-};
+import type { AuthenticatedRequest } from "../types/middleware/middlewareTypes";
+import type { PostWithAssociations } from "../types/modules/modulesTypes";
 
 // --- Action pour créer un nouvel article (celle que vous aviez déjà) ---
-const create = async (req: AuthRequest, res: Response) => {
+const create = async (req: AuthenticatedRequest, res: Response) => {
   const { title, hook, content, tagIds } = req.body;
   const userId = req.user?.id;
 
@@ -64,7 +59,7 @@ const create = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const read = async (req: AuthRequest, res: Response) => {
+const read = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { slug } = req.params;
     const post = await Posts.findOne({
@@ -116,7 +111,7 @@ const read = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const browse = async (req: AuthRequest, res: Response) => {
+const browse = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const posts = await Posts.findAll({
       where: { status: "approved" },
@@ -164,7 +159,7 @@ const browse = async (req: AuthRequest, res: Response) => {
 };
 
 // --- Action pour un admin pour récupérer les articles pour le dashboard (MISE À JOUR) ---
-const browseForAdmin = async (req: AuthRequest, res: Response) => {
+const browseForAdmin = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { status } = req.query;
     const whereCondition: { status?: string } = {};
@@ -199,7 +194,7 @@ const browseForAdmin = async (req: AuthRequest, res: Response) => {
 };
 
 // --- Action pour un admin pour changer le statut d'un article (inchangée) ---
-const updateStatus = async (req: AuthRequest, res: Response) => {
+const updateStatus = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const { status, rejection_reason } = req.body;
 
@@ -240,7 +235,7 @@ const updateStatus = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const updateContext = async (req: AuthRequest, res: Response) => {
+const updateContext = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const { context } = req.body;
 
@@ -268,7 +263,7 @@ const updateContext = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const toggleFeature = async (req: AuthRequest, res: Response) => {
+const toggleFeature = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   try {
@@ -297,7 +292,7 @@ const toggleFeature = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const destroy = async (req: AuthRequest, res: Response) => {
+const destroy = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   try {

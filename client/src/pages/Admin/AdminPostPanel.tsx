@@ -2,12 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../components/Modal/Modal";
+import type { AdminPostPanelProps } from "../../types/pages/PagesTypes";
 import { useToastStore } from "../../utils/useToast";
-import type { FullPost as Post } from "../Post";
-
-interface AdminPostPanelProps {
-  post: Post;
-}
 
 const performAdminAction = async ({
   postId,

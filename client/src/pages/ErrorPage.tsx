@@ -1,15 +1,7 @@
 import { Link, useRouteError } from "react-router-dom";
-
-// Interface pour typer l'objet d'erreur de React Router
-interface RouteError {
-  status?: number;
-  statusText?: string;
-  message?: string;
-  data?: string;
-}
+import type { RouteError } from "../types/pages/PagesTypes";
 
 export default function ErrorPage() {
-  // useRouteError() nous donne l'erreur qui a été levée
   const error = useRouteError() as RouteError;
   console.error(error);
 

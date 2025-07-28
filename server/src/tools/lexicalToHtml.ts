@@ -2,20 +2,13 @@ import { createHeadlessEditor } from "@lexical/headless";
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { JSDOM } from "jsdom";
 import { type Klass, type LexicalNode, ParagraphNode, TextNode } from "lexical";
+import type { JSDOMGlobal } from "../types/tools/toolsTypes";
 
 // Import des nœuds "riches" pour la conversion
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-
-// --- CORRECTION DE TYPAGE ---
-// On définit une interface simple avec SEULEMENT les propriétés que nous allons manipuler.
-// Cela évite les conflits avec les types globaux complexes et en lecture seule.
-interface JSDOMGlobal {
-  window?: Window;
-  document?: Document;
-}
 
 // La configuration de l'éditeur avec un type explicite pour plus de clarté.
 const editorConfig: {

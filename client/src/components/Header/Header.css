@@ -18,7 +18,7 @@ Thanks Temani Afif for css hover effect :)
   border: none;
   cursor: pointer;
   padding: 0;
-  text-decoration: none; /* Assure que le lien n'est pas souligné */
+  text-decoration: none;
 }
 
 .logo {

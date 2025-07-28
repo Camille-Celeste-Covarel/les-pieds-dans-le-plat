@@ -4,20 +4,7 @@ import { FaEye, FaEyeSlash, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { useToastStore } from "../utils/useToast";
 import "../stylesheets/registerpage.css";
-
-interface FormData {
-  email: string;
-  public_name: string;
-  password: string;
-  confirmPassword: string;
-}
-
-interface FormErrors {
-  email?: string;
-  public_name?: string;
-  password?: string;
-  confirmPassword?: string;
-}
+import type { FormData, FormErrors } from "../types/pages/PagesTypes";
 
 function RegisterPage() {
   const navigate = useNavigate();

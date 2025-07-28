@@ -1,16 +1,5 @@
 import { create } from "zustand";
-
-interface ToastMessage {
-  id: number;
-  message: string;
-  type: "success" | "error";
-}
-
-interface ToastState {
-  toasts: ToastMessage[];
-  addToast: (message: string, type?: "success" | "error") => void;
-  removeToast: (id: number) => void;
-}
+import type { ToastState } from "../types/utils/utilsTypes";
 
 let toastId = 0;
 
@@ -22,7 +11,6 @@ export const useToastStore = create<ToastState>((set) => ({
       toasts: [...state.toasts, { id, message, type }],
     }));
 
-    // Le toast disparaît automatiquement après 4 secondes
     setTimeout(() => {
       set((state) => ({
         toasts: state.toasts.filter((toast) => toast.id !== id),

@@ -67,8 +67,6 @@ function onError(error: Error) {
   console.error(error);
 }
 
-// --- NOUVEAU PLUGIN POUR GÉRER L'ÉTAT ÉDITABLE ---
-// Ce plugin met à jour l'état de l'éditeur lorsque la prop isEditable change.
 function EditablePlugin({ isEditable }: { isEditable: boolean }) {
   const [editor] = useLexicalComposerContext();
 
@@ -76,7 +74,7 @@ function EditablePlugin({ isEditable }: { isEditable: boolean }) {
     editor.setEditable(isEditable);
   }, [editor, isEditable]);
 
-  return null; // Ce plugin n'a pas d'interface utilisateur
+  return null;
 }
 
 const editorTheme = {
@@ -153,7 +151,6 @@ const COLOR_PALETTE_MAP: Record<string, string> = {
 
 const COLOR_PALETTE = Object.keys(COLOR_PALETTE_MAP);
 
-// La barre d'outils accepte maintenant la prop `isEditable`
 function ToolbarPlugin({ isEditable }: { isEditable: boolean }) {
   const [editor] = useLexicalComposerContext();
   const [isBold, setIsBold] = useState(false);
@@ -368,13 +365,11 @@ function ToolbarPlugin({ isEditable }: { isEditable: boolean }) {
       KEY_DOWN_COMMAND,
       (event: KeyboardEvent) => {
         if (event.ctrlKey) {
-          // Ctrl+K pour les liens
           if (event.key === "k") {
             event.preventDefault();
             insertLink();
             return true;
           }
-          // Ctrl+Alt+1 pour H1
           if (event.altKey && event.key === "1") {
             event.preventDefault();
             formatBlock("h1");

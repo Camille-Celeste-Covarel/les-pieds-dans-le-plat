@@ -1,10 +1,10 @@
-import { isMobile } from "react-device-detect";
 import { useEffect, useRef, useState } from "react";
+import { isMobile } from "react-device-detect";
 import { FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
-import { useOverlay } from "../../contexts/OverlayContext/OverlayContext"; // <-- Importez useOverlay
+import { useOverlay } from "../../contexts/OverlayContext/OverlayContext";
 import "./ProfileDropdown.css";
 
 export function ProfileDropdown() {

@@ -5,21 +5,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useToastStore } from "../utils/useToast";
 import "../stylesheets/profilepage.css";
-
-interface UserProfile {
-  id: string;
-  public_name: string;
-  email: string;
-  avatar_url: string | null;
-  createdAt: string;
-}
-interface MyPost {
-  title: string;
-  slug: string;
-  status: "pending_review" | "approved" | "rejected";
-  createdAt: string;
-  rejection_reason: string | null;
-}
+import type { MyPost, UserProfile } from "../types/pages/PagesTypes";
 
 // Fonction de fetch pour le profil
 const fetchUserProfile = async (): Promise<UserProfile> => {
