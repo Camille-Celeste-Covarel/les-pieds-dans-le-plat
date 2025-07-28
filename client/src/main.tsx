@@ -5,22 +5,26 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import Concept from "./pages/Concept.tsx";
+import ErrorPage from "./pages/ErrorPage.tsx";
+import ExprimezVous from "./pages/ExprimezVous.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import LandingPage from "./pages/LandingPage.tsx";
 import LeMur from "./pages/LeMur.tsx";
 import LoginPage from "./pages/LoginPage";
+import Post from "./pages/Post.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
+import PublicProfile from "./pages/PublicProfile.tsx";
 import RegisterPage from "./pages/RegisterPage";
 import Regles from "./pages/Regles.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import AdminRoute from "./utils/AdminRoute.tsx";
 import ProtectedRoute from "./utils/ProtectedRoute";
-import ExprimezVous from "./pages/ExprimezVous.tsx";
-import Concept from "./pages/Concept.tsx";
 
 const router = createBrowserRouter([
   {
     element: <App />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
@@ -36,7 +40,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/exprimez-vous",
-        element: <ExprimezVous />,
+        element: (
+          <ProtectedRoute>
+            <ExprimezVous />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/le-concept",
@@ -65,25 +73,32 @@ const router = createBrowserRouter([
       {
         path: "/admin/dashboard",
         element: (
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
         ),
-        handle: { isOverlay: true },
       },
       {
         path: "/profil",
         element: (
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
         ),
+        handle: { isOverlay: true },
+      },
+      {
+        path: "/profil/:publicName",
+        element: <PublicProfile />,
+      },
+      {
+        path: "/:author/:title",
+        element: <Post />,
         handle: { isOverlay: true },
       },
     ],
   },
 ]);
-
 
 const rootElement = document.getElementById("root");
 if (rootElement == null) {
@@ -96,7 +111,6 @@ createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   </StrictMode>,
 );

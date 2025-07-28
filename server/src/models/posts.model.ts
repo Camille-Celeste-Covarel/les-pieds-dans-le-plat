@@ -1,8 +1,10 @@
-import { DataTypes, Model, type Sequelize } from "sequelize";
+import { DataTypes, Model } from "sequelize";
+import type { BelongsToManySetAssociationsMixin, Sequelize } from "sequelize";
 import type {
   PostsAttributes,
   PostsCreationAttributes,
 } from "../types/models/models";
+import type { Tags } from "./tags.model";
 import type { User } from "./user.model";
 
 export class Posts
@@ -12,14 +14,22 @@ export class Posts
   public id!: string;
   public user_id!: string;
   public title!: string;
-  public status!: string;
-  public subtitle!: string | null;
+  public status!: "pending_review" | "approved" | "rejected";
+  public hook!: string | null;
+  public is_featured!: boolean;
   public content!: string;
+  public slug!: string;
+  public rejection_reason!: string | null;
+  public admin_context!: string | null;
+
   public publishedAt!: Date | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
   public readonly author?: User;
+  public readonly tags?: Tags[];
+
+  public setTags!: BelongsToManySetAssociationsMixin<Tags, number>;
 
   static initialize(sequelize: Sequelize) {
     Posts.init(
@@ -48,9 +58,14 @@ export class Posts
           allowNull: false,
           defaultValue: "pending_review",
         },
-        subtitle: {
-          type: DataTypes.STRING(255),
+        hook: {
+          type: DataTypes.STRING(300),
           allowNull: true,
+        },
+        is_featured: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
         },
         content: {
           type: DataTypes.TEXT,
@@ -58,6 +73,19 @@ export class Posts
         },
         publishedAt: {
           type: DataTypes.DATE,
+          allowNull: true,
+        },
+        slug: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true,
+        },
+        rejection_reason: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+        },
+        admin_context: {
+          type: DataTypes.TEXT,
           allowNull: true,
         },
       },

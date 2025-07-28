@@ -1,6 +1,8 @@
-import { useState } from "react";
+import type React from "react";
+import { useRef, useState } from "react";
 import { FaEye, FaEyeSlash, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router";
+import { useToastStore } from "../utils/useToast";
 import "../stylesheets/registerpage.css";
 
 interface FormData {
@@ -19,6 +21,8 @@ interface FormErrors {
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const { addToast } = useToastStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -32,6 +36,7 @@ function RegisterPage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
@@ -68,39 +73,43 @@ function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (validateForm()) {
-      try {
-        const formDataToSend = new window.FormData();
+    if (!validateForm()) {
+      return;
+    }
 
-        // Cette boucle est maintenant beaucoup plus simple
-        formDataToSend.append("email", formData.email);
-        formDataToSend.append("public_name", formData.public_name);
-        formDataToSend.append("password", formData.password);
+    setIsLoading(true);
 
-        if (avatarFile) {
-          formDataToSend.append("avatar", avatarFile);
-        }
+    try {
+      const formDataToSend = new window.FormData();
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("public_name", formData.public_name);
+      formDataToSend.append("password", formData.password);
 
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/auth/register`,
-          {
-            method: "POST",
-            body: formDataToSend,
-          },
-        );
-
-        const data = await response.json();
-
-        if (response.ok) {
-          alert("Compte créé avec succès !");
-          navigate("/login");
-        } else {
-          alert(data.error || "Erreur lors de la création du compte");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Erreur réseau");
+      if (avatarFile) {
+        formDataToSend.append("avatar", avatarFile);
       }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
+        {
+          method: "POST",
+          body: formDataToSend,
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        addToast("Compte créé avec succès ! Bienvenue !", "success");
+        navigate("/login");
+      } else {
+        addToast(data.error || "Erreur lors de la création du compte", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      addToast("Erreur réseau. Veuillez vérifier votre connexion.", "error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -114,10 +123,7 @@ function RegisterPage() {
   };
 
   const triggerFileInput = () => {
-    const fileInput = document.getElementById(
-      "profile-image-input",
-    ) as HTMLInputElement;
-    fileInput?.click();
+    fileInputRef.current?.click();
   };
 
   return (
@@ -143,6 +149,7 @@ function RegisterPage() {
               Choisir un avatar
             </button>
             <input
+              ref={fileInputRef}
               id="profile-image-input"
               type="file"
               accept="image/*"
@@ -159,6 +166,7 @@ function RegisterPage() {
               onChange={handleChange}
               className={errors.public_name ? "error" : ""}
               placeholder="Entrez votre pseudonyme"
+              disabled={isLoading}
             />
             {errors.public_name && (
               <span className="error-message">{errors.public_name}</span>
@@ -173,6 +181,7 @@ function RegisterPage() {
               onChange={handleChange}
               className={errors.email ? "error" : ""}
               placeholder="Entrez votre email"
+              disabled={isLoading}
             />
             {errors.email && (
               <span className="error-message">{errors.email}</span>
@@ -188,6 +197,7 @@ function RegisterPage() {
                 onChange={handleChange}
                 className={errors.password ? "error" : ""}
                 placeholder="Entrez votre mot de passe"
+                disabled={isLoading}
               />
               <button
                 type="button"
@@ -211,6 +221,7 @@ function RegisterPage() {
                 onChange={handleChange}
                 className={errors.confirmPassword ? "error" : ""}
                 placeholder="Confirmez votre mot de passe"
+                disabled={isLoading}
               />
               <button
                 type="button"
@@ -231,8 +242,12 @@ function RegisterPage() {
             )}
           </div>
 
-          <button type="submit" className="button-classic submit-button">
-            Créer mon compte
+          <button
+            type="submit"
+            className="button-classic submit-button"
+            disabled={isLoading}
+          >
+            {isLoading ? "Création en cours..." : "Créer mon compte"}
           </button>
         </section>
       </div>

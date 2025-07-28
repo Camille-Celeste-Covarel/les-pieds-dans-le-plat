@@ -1,71 +1,114 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type React from "react";
 import { useState } from "react";
 import { LexicalEditor } from "../components/Editor/LexicalEditor";
+import { useToastStore } from "../utils/useToast";
 import "../stylesheets/exprimezvous.css";
+
+interface Tag {
+  id: number;
+  name: string;
+}
+
+interface NewPostPayload {
+  title: string;
+  hook: string;
+  content: string;
+  tagIds: number[];
+}
+
+// --- Fonctions d'API ---
+const fetchTags = async (): Promise<Tag[]> => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tags`);
+  if (!response.ok) {
+    throw new Error("Impossible de charger les tags.");
+  }
+  return response.json();
+};
+
+const createPost = async (payload: NewPostPayload) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Une erreur est survenue.");
+  }
+  return response.json();
+};
 
 function ExprimezVous() {
   const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
+  const [hook, setHook] = useState("");
   const [editorState, setEditorState] = useState<string>("");
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [editorKey, setEditorKey] = useState(0);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const { addToast } = useToastStore();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const {
+    data: tags,
+    isLoading: isLoadingTags,
+    error: tagsError,
+  } = useQuery<Tag[]>({
+    queryKey: ["tags"],
+    queryFn: fetchTags,
+  });
+
+  // --- Mutation pour la création de post ---
+  const postMutation = useMutation({
+    mutationFn: createPost,
+    onSuccess: () => {
+      addToast("Votre article a bien été soumis pour relecture !", "success");
+      void queryClient.invalidateQueries({ queryKey: ["myPosts"] });
+      setTitle("");
+      setHook("");
+      setEditorState("");
+      setSelectedTags([]);
+      setEditorKey((prevKey) => prevKey + 1);
+    },
+    onError: (error: Error) => {
+      addToast(error.message, "error");
+    },
+  });
+
+  const handleTagChange = (tagId: number) => {
+    setSelectedTags((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId],
+    );
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
 
     if (!title.trim()) {
-      setMessage({ type: "error", text: "Le titre est obligatoire." });
+      addToast("Le titre est obligatoire.", "error");
+      return;
+    }
+    if (!hook.trim()) {
+      addToast("L'accroche est obligatoire.", "error");
       return;
     }
     if (!editorState || editorState.length < 50) {
-      setMessage({
-        type: "error",
-        text: "Le contenu de l'article est obligatoire.",
-      });
+      addToast(
+        "Le contenu de l'article est obligatoire et doit faire au moins 50 caractères.",
+        "error",
+      );
       return;
     }
 
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/posts`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            title,
-            subtitle,
-            content: editorState,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Une erreur est survenue.");
-      }
-
-      setMessage({
-        type: "success",
-        text: "Votre article a bien été soumis pour relecture !",
-      });
-      setTitle("");
-      setSubtitle("");
-      setEditorState("");
-      setEditorKey((prevKey) => prevKey + 1);
-    } catch (error) {
-      if (error instanceof Error) {
-        setMessage({ type: "error", text: error.message });
-      } else {
-        setMessage({
-          type: "error",
-          text: "Une erreur inconnue est survenue.",
-        });
-      }
-    }
+    postMutation.mutate({
+      title,
+      hook,
+      content: editorState,
+      tagIds: selectedTags,
+    });
   };
 
   return (
@@ -86,19 +129,49 @@ function ExprimezVous() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Un titre percutant"
             required
+            disabled={postMutation.isPending}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="subtitle">Sous-titre (optionnel)</label>
-          <input
-            type="text"
-            id="subtitle"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            placeholder="Une phrase d'accroche"
-          />
+          <label htmlFor="hook">Accroche de l'article</label>
+          <div className="form-group-with-counter">
+            <textarea
+              id="hook"
+              value={hook}
+              onChange={(e) => setHook(e.target.value)}
+              placeholder="Rédigez une courte phrase (300 caractères max) qui donnera envie de lire votre texte. Elle servira d'aperçu."
+              rows={3}
+              maxLength={300}
+              required
+              disabled={postMutation.isPending}
+            />
+            <small className="char-counter">{hook.length} / 300</small>
+          </div>
         </div>
+
+        <fieldset className="form-group" disabled={postMutation.isPending}>
+          <legend>Thématiques (optionnel)</legend>
+          {isLoadingTags && <p>Chargement des thématiques...</p>}
+          {tagsError && (
+            <p style={{ color: "red" }}>
+              Erreur de chargement des thématiques.
+            </p>
+          )}
+          <div className="tags-selection-container">
+            {tags?.map((tag) => (
+              <div key={tag.id} className="tag-checkbox">
+                <input
+                  type="checkbox"
+                  id={`tag-${tag.id}`}
+                  checked={selectedTags.includes(tag.id)}
+                  onChange={() => handleTagChange(tag.id)}
+                />
+                <label htmlFor={`tag-${tag.id}`}>{tag.name}</label>
+              </div>
+            ))}
+          </div>
+        </fieldset>
 
         <div className="form-group">
           <label htmlFor="article-content">Contenu de l'article</label>
@@ -106,21 +179,18 @@ function ExprimezVous() {
             key={editorKey}
             onChange={setEditorState}
             id="article-content"
+            isEditable={!postMutation.isPending}
           />
         </div>
 
-        {message && (
-          <div
-            className={`form-message ${message.type}`}
-            role="alert"
-            aria-live="assertive"
-          >
-            {message.text}
-          </div>
-        )}
-
-        <button type="submit" className="submit-button">
-          Soumettre pour relecture
+        <button
+          type="submit"
+          className="submit-button"
+          disabled={postMutation.isPending}
+        >
+          {postMutation.isPending
+            ? "Envoi en cours..."
+            : "Soumettre pour relecture"}
         </button>
       </form>
     </div>

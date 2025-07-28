@@ -67,6 +67,18 @@ function onError(error: Error) {
   console.error(error);
 }
 
+// --- NOUVEAU PLUGIN POUR GÉRER L'ÉTAT ÉDITABLE ---
+// Ce plugin met à jour l'état de l'éditeur lorsque la prop isEditable change.
+function EditablePlugin({ isEditable }: { isEditable: boolean }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    editor.setEditable(isEditable);
+  }, [editor, isEditable]);
+
+  return null; // Ce plugin n'a pas d'interface utilisateur
+}
+
 const editorTheme = {
   heading: {
     h1: "editor-heading-h1",
@@ -141,7 +153,8 @@ const COLOR_PALETTE_MAP: Record<string, string> = {
 
 const COLOR_PALETTE = Object.keys(COLOR_PALETTE_MAP);
 
-function ToolbarPlugin() {
+// La barre d'outils accepte maintenant la prop `isEditable`
+function ToolbarPlugin({ isEditable }: { isEditable: boolean }) {
   const [editor] = useLexicalComposerContext();
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -394,7 +407,7 @@ function ToolbarPlugin() {
     <div className="editor-toolbar">
       <button
         type="button"
-        disabled={!canUndo}
+        disabled={!canUndo || !isEditable}
         onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
         aria-label="Annuler"
         title="Annuler (Ctrl+Z)"
@@ -417,7 +430,7 @@ function ToolbarPlugin() {
       </button>
       <button
         type="button"
-        disabled={!canRedo}
+        disabled={!canRedo || !isEditable}
         onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
         aria-label="Rétablir"
         title="Rétablir (Ctrl+Y)"
@@ -450,6 +463,7 @@ function ToolbarPlugin() {
           aria-expanded={isFontFamilyDropdownOpen}
           title="Police de caractères"
           style={{ fontFamily: fontFamily }}
+          disabled={!isEditable}
         >
           {fontFamily}
           <i className="chevron-down" />
@@ -478,6 +492,7 @@ function ToolbarPlugin() {
           onClick={() => handleFontSizeIncrement("decrement")}
           aria-label="Diminuer la taille"
           title="Diminuer la taille"
+          disabled={!isEditable}
         >
           -
         </button>
@@ -488,6 +503,7 @@ function ToolbarPlugin() {
           aria-haspopup="true"
           aria-expanded={isFontSizeDropdownOpen}
           title="Taille de la police"
+          disabled={!isEditable}
         >
           {Number.parseInt(fontSize, 10)}
         </button>
@@ -497,6 +513,7 @@ function ToolbarPlugin() {
           onClick={() => handleFontSizeIncrement("increment")}
           aria-label="Augmenter la taille"
           title="Augmenter la taille"
+          disabled={!isEditable}
         >
           +
         </button>
@@ -526,6 +543,7 @@ function ToolbarPlugin() {
           aria-haspopup="true"
           aria-expanded={isColorPickerOpen}
           aria-label="Changer la couleur du texte"
+          disabled={!isEditable}
         >
           <div
             className="color-swatch-display"
@@ -571,6 +589,7 @@ function ToolbarPlugin() {
         className={isLink ? "active" : ""}
         aria-label="Insérer un lien"
         title="Insérer un lien (Ctrl+K)"
+        disabled={!isEditable}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -595,6 +614,7 @@ function ToolbarPlugin() {
         className={isBold ? "active" : ""}
         aria-label="Mettre en gras"
         title="Mettre en gras (Ctrl+B)"
+        disabled={!isEditable}
       >
         <b>B</b>
       </button>
@@ -604,6 +624,7 @@ function ToolbarPlugin() {
         className={isItalic ? "active" : ""}
         aria-label="Mettre en italique"
         title="Mettre en italique (Ctrl+I)"
+        disabled={!isEditable}
       >
         <i>I</i>
       </button>
@@ -613,6 +634,7 @@ function ToolbarPlugin() {
         className={isUnderline ? "active" : ""}
         aria-label="Souligner"
         title="Souligner (Ctrl+U)"
+        disabled={!isEditable}
       >
         <u>U</u>
       </button>
@@ -622,6 +644,7 @@ function ToolbarPlugin() {
         className={isStrikethrough ? "active" : ""}
         aria-label="Barrer"
         title="Barrer"
+        disabled={!isEditable}
       >
         <s>S</s>
       </button>
@@ -631,6 +654,7 @@ function ToolbarPlugin() {
         className={isCode ? "active" : ""}
         aria-label="Code en ligne"
         title="Code en ligne"
+        disabled={!isEditable}
       >
         {"<>"}
       </button>
@@ -643,6 +667,7 @@ function ToolbarPlugin() {
         className={blockType === "h1" ? "active" : ""}
         aria-label="Titre 1"
         title="Titre 1"
+        disabled={!isEditable}
       >
         H1
       </button>
@@ -652,6 +677,7 @@ function ToolbarPlugin() {
         className={blockType === "h2" ? "active" : ""}
         aria-label="Titre 2"
         title="Titre 2"
+        disabled={!isEditable}
       >
         H2
       </button>
@@ -661,6 +687,7 @@ function ToolbarPlugin() {
         className={blockType === "quote" ? "active" : ""}
         aria-label="Citation"
         title="Citation"
+        disabled={!isEditable}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <title>Citation</title>
@@ -673,6 +700,7 @@ function ToolbarPlugin() {
         className={blockType === "ul" ? "active" : ""}
         aria-label="Liste à puces"
         title="Liste à puces"
+        disabled={!isEditable}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <title>Liste à puces</title>
@@ -685,6 +713,7 @@ function ToolbarPlugin() {
         className={blockType === "ol" ? "active" : ""}
         aria-label="Liste numérotée"
         title="Liste numérotée"
+        disabled={!isEditable}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <title>Liste numérotée</title>
@@ -721,6 +750,7 @@ function ToolbarPlugin() {
         onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center")}
         aria-label="Centrer"
         title="Centrer"
+        disabled={!isEditable}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -730,6 +760,8 @@ function ToolbarPlugin() {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
           <title>Centrer</title>
           <line x1="18" y1="10" x2="6" y2="10" />
@@ -743,6 +775,7 @@ function ToolbarPlugin() {
         onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right")}
         aria-label="Aligner à droite"
         title="Aligner à droite"
+        disabled={!isEditable}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -752,6 +785,8 @@ function ToolbarPlugin() {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
           <title>Aligner à droite</title>
           <line x1="21" y1="10" x2="7" y2="10" />
@@ -770,7 +805,6 @@ function ClickableLinkPlugin(): null {
   useEffect(() => {
     const editorRootElement = editor.getRootElement();
 
-    // Fonction pour gérer le clic
     const onClick = (event: MouseEvent) => {
       const link = (event.target as HTMLElement).closest("a");
 
@@ -788,12 +822,15 @@ function ClickableLinkPlugin(): null {
       }
     };
 
-    // Attacher et détacher l'écouteur
     const rootElement = editorRootElement;
-    rootElement?.addEventListener("click", onClick);
+    if (rootElement) {
+      rootElement.addEventListener("click", onClick);
+    }
 
     return () => {
-      rootElement?.removeEventListener("click", onClick);
+      if (rootElement) {
+        rootElement.removeEventListener("click", onClick);
+      }
     };
   }, [editor]);
 
@@ -835,16 +872,18 @@ function AutoLinkPlugin(): null {
   return null;
 }
 
-interface LexicalEditorProps {
+export interface LexicalEditorProps {
   onChange: (editorState: string) => void;
   id?: string;
   initialContent?: string;
+  isEditable?: boolean;
 }
 
 export function LexicalEditor({
   onChange,
   id,
   initialContent,
+  isEditable = true,
 }: LexicalEditorProps) {
   const initialConfig = useMemo(
     () => ({
@@ -853,19 +892,22 @@ export function LexicalEditor({
       onError,
       nodes: editorNodes,
       editorState: initialContent,
+      editable: isEditable,
     }),
-    [initialContent],
+    [initialContent, isEditable],
   );
 
   const handleStateChange = useCallback(
     (editorState: EditorState) => {
       const editorStateJSON = editorState.toJSON();
-      const firstChild = editorStateJSON.root.children[0];
+      const root = editorStateJSON.root;
+      const firstChild = root.children[0];
+
       const isNonEmpty =
-        editorStateJSON.root.children.length > 1 ||
+        root.children.length > 1 ||
         (firstChild &&
-          "children" in firstChild &&
-          (firstChild as SerializedElementNode).children.length > 0);
+          (firstChild.type !== "paragraph" ||
+            (firstChild as SerializedElementNode).children.length > 0));
 
       if (isNonEmpty) {
         onChange(JSON.stringify(editorStateJSON));
@@ -878,8 +920,8 @@ export function LexicalEditor({
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <div className="editor-container">
-        <ToolbarPlugin />
+      <div className={`editor-container ${!isEditable ? "disabled" : ""}`}>
+        <ToolbarPlugin isEditable={isEditable} />
         <div className="editor-inner">
           <RichTextPlugin
             contentEditable={
@@ -899,6 +941,7 @@ export function LexicalEditor({
           <AutoLinkPlugin />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
           <OnChangePlugin onChange={handleStateChange} />
+          <EditablePlugin isEditable={isEditable} />
         </div>
       </div>
     </LexicalComposer>
