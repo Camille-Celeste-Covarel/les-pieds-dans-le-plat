@@ -2,14 +2,11 @@ import { useState } from "react";
 import PostValidation from "./Admin/PostValidation";
 
 const AdminDashboard = () => {
-  // On définit les onglets disponibles. C'est ici que vous pourrez en ajouter.
   const tabs = [
     { id: "posts", label: "Validation des Articles" },
     { id: "users", label: "Gestion des Utilisateurs" },
-    // { id: "stats", label: "Statistiques" }, -> Exemple pour le futur
   ];
 
-  // On utilise un état pour savoir quel onglet est actif.
   const [activeTab, setActiveTab] = useState(tabs[0].id);
 
   return (

@@ -1,22 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import "../stylesheets/LeMur.css";
-
-interface PostOnTheWall {
-  id: string;
-  title: string;
-  hook: string | null;
-  slug: string;
-  is_featured: boolean;
-  author: {
-    public_name: string;
-    avatar_url: string | null;
-  };
-  tags: {
-    id: number;
-    name: string;
-  }[];
-}
+import type { PostOnTheWall } from "../types/pages/PagesTypes";
 
 const fetchLatestPosts = async (): Promise<PostOnTheWall[]> => {
   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`);

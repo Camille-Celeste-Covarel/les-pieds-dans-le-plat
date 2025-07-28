@@ -68,7 +68,7 @@
   text-decoration: none;
   display: block;
   cursor: pointer;
-  transition: background-color 0.2s; /* Ajout d'une transition douce */
+  transition: background-color 0.2s;
 }
 
 .dropdown-item:hover {
