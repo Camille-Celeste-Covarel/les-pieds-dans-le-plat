@@ -22,11 +22,26 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # ou la version que vous utilisez
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
 
-      - name: Run checks
+      - name: Run Linter and Formatter
         run: biome ci --error-on-warnings --no-errors-on-unmatched --changed --since="origin/${GITHUB_BASE_REF}" .
 
-      - name: Compile with tsc
-        run: npm i && (cd client && npx tsc --noEmit) && (cd server && npx tsc --noEmit)
+      - name: Run Security Audit
+        run: npm audit --audit-level=high
+
+      - name: Check TypeScript Compilation (Client)
+        run: cd client && npx tsc --noEmit
+
+      - name: Check TypeScript Compilation (Server)
+        run: cd server && npx tsc --noEmit
