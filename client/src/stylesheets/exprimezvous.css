@@ -1,0 +1,120 @@
+.exprimez-vous-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.exprimez-vous-container h1 {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.exprimez-vous-container p {
+  color: #6c757d;
+  margin-bottom: 2rem;
+}
+
+.exprimez-vous-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label,
+.form-group legend {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.tags-selection-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tag-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tag-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.tag-checkbox label {
+  font-weight: normal;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.submit-button {
+  align-self: flex-start;
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background-color: var(--fondamental-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.submit-button:not(:disabled):hover {
+  background-color: #3a5a8a;
+}
+
+/* --- STYLES AJOUTÉS --- */
+.form-group-with-counter {
+  position: relative;
+}
+
+.form-group-with-counter textarea {
+  resize: none;
+  overflow: hidden;
+}
+
+.char-counter {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 0.8rem;
+  color: #6c757d;
+  background-color: #fff;
+  padding: 0 4px;
+  pointer-events: none;
+}

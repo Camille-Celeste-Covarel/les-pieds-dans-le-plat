@@ -1,0 +1,84 @@
+.admin-post-panel {
+  position: sticky;
+  top: 80px;
+  z-index: 100;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin: 2rem 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.admin-post-panel .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.admin-post-panel .panel-header:hover {
+  background-color: #e9ecef;
+}
+
+.admin-post-panel .chevron {
+  transition: transform 0.2s ease-in-out;
+  font-size: 0.8rem;
+}
+
+.admin-post-panel .chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.admin-post-panel .panel-content {
+  padding: 1.25rem;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-post-panel .panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-post-panel .panel-section.actions {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.admin-post-panel label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #343a40;
+}
+
+.admin-post-panel .panel-section input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background-color: white;
+}
+
+.admin-post-panel button {
+  align-self: flex-start;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}

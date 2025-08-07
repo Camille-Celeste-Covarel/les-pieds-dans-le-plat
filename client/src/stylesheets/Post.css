@@ -1,0 +1,249 @@
+/* Style pour la vue en pleine page */
+.post-page-container {
+  background-color: white;
+  padding: 30px 40px;
+  max-width: 800px;
+  margin: 2rem auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Style pour la vue dans l'overlay */
+.post-overlay-container {
+  padding: 20px 30px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.post-status-message {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+.post-status-message.error {
+  color: #d9534f;
+}
+
+/* --- Panneau de Modération --- */
+.admin-validation-panel {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.admin-validation-panel h3 {
+  margin-top: 0;
+  color: #856404;
+}
+.admin-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-actions.general-actions {
+  border-top: 1px solid #ffe69c;
+  padding-top: 1rem;
+}
+
+.admin-actions .button-approve,
+.admin-actions .button-reject {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.button-approve {
+  background-color: #28a745;
+  color: white;
+}
+.button-reject {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* --- Contenu de l'article --- */
+.post-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+.post-header .post-hook {
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin: 0 0 1.5rem 0;
+  font-style: italic;
+  border-left: 3px solid #ccc;
+  padding-left: 1rem;
+}
+
+.featured-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 1rem 0;
+}
+
+.admin-context-box {
+  background-color: #eef2f7;
+  border-left: 4px solid var(--fondamental-color);
+  padding: 1rem 1.5rem;
+  margin: 2rem 0; /* Marge en haut et en bas */
+  border-radius: 0 4px 4px 0;
+}
+.admin-context-box p {
+  margin: 0.5rem 0 0 0;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding: 1rem 0;
+  margin-top: 2rem;
+}
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.author-avatar-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.author-info a {
+  font-weight: 600;
+  color: var(--fondamental-color);
+  text-decoration: none;
+}
+.author-info a:hover {
+  text-decoration: underline;
+}
+.publish-date {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.post-body {
+  line-height: 1.7;
+  font-size: 1.1rem;
+  width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  margin-top: 2rem;
+}
+.post-body p {
+  margin-bottom: 1.5rem;
+}
+.post-body h2,
+.post-body h3 {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.post-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.share-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.share-button {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+.share-button:hover {
+  background-color: #f0f0f0;
+}
+.share-message {
+  font-size: 0.9rem;
+  color: #28a745;
+}
+
+/* --- Formulaire pour le contexte admin --- */
+.admin-context-form-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.admin-context-form-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.admin-context-form-section form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-context-form-section textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.admin-context-form-section .button-classic {
+  align-self: flex-start;
+}
+
+/* Styles pour le formulaire de rejet DANS la modale */
+.rejection-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rejection-form label {
+  font-weight: 600;
+}
+
+.rejection-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.button-danger {
+  background-color: #dc3545;
+  color: white;
+}

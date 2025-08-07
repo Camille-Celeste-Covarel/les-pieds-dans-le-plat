@@ -1,0 +1,205 @@
+.profile-page-container {
+  background-color: white;
+  padding: 30px 40px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  overflow-y: auto;
+}
+
+.profile-page-container section {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 30px;
+}
+
+.profile-page-container section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 1.8rem;
+  color: var(--fondamental-color);
+}
+
+.profile-header p {
+  margin: 0;
+  color: #6c757d;
+}
+
+.profile-avatar-section h3,
+.profile-details-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  color: var(--seconde-color);
+}
+
+.profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatar-display {
+  width: 120px;
+  height: 120px;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--tierce-color);
+}
+
+.avatar-default-icon {
+  color: #adb5bd;
+}
+
+.profile-avatar-section form {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.button-classic-outline {
+  padding: 10px 20px;
+  border: 1px solid var(--fondamental-color);
+  color: var(--fondamental-color);
+  background-color: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.button-classic-outline:hover {
+  background-color: var(--fondamental-color);
+  color: white;
+}
+
+.info-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.info-group:last-of-type {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.info-value {
+  color: #212529;
+  background-color: #f8f9fa;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+.profile-actions-section {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.button-danger {
+  background-color: var(--seconde-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button-danger:hover {
+  filter: brightness(0.9);
+}
+
+.profile-posts-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  color: var(--seconde-color);
+}
+
+.my-posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.my-post-item {
+  background-color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.my-post-info a {
+  font-weight: 600;
+  color: var(--fondamental-color);
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+.my-post-info a:hover {
+  text-decoration: underline;
+}
+
+.my-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.status-pill {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: white;
+}
+
+.status-pill.approved {
+  background-color: #28a745;
+}
+.status-pill.pending {
+  background-color: #ffc107;
+  color: #212529;
+}
+.status-pill.rejected {
+  background-color: #dc3545;
+}
+
+.rejection-reason {
+  font-size: 0.8rem;
+  color: #6c757d;
+  cursor: help;
+  border-bottom: 1px dotted #6c757d;
+  margin: 0;
+}
+
+.rejection-reason-display {
+  font-size: 0.9rem;
+  color: #721c24;
+  background-color: #f8d7da;
+  border-left: 3px solid #dc3545;
+  padding: 0.75rem;
+  margin: 0.5rem 0 0 0;
+  border-radius: 4px;
+}

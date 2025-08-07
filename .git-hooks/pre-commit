@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# --- Validation du nom de la branche ---
+# Vérifie que la branche actuelle correspond à l'un des formats suivants :
+# - main, develop, staging, dev
+# - feature/nom-de-la-feature/0.0.0
+# - version/0.0.0
+echo "--- Checking branch name..."
+
+# MODIFIÉ : La regex est maintenant beaucoup plus stricte.
+
+npx validate-branch-name --regex '^(main|develop|staging|dev|feature\/[a-z0-9-]+\/\d+\.\d+\.\d+|version\/\d+\.\d+\.\d+)$'
+
+# --- Vérification de la qualité du code ---
+# Lance le linter, le formateur et le vérificateur de types sur les fichiers modifiés.
+echo "\n--- Checking code quality..."
+npm run check
