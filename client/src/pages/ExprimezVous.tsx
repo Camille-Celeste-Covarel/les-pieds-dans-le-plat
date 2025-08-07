@@ -4,18 +4,7 @@ import { useState } from "react";
 import { LexicalEditor } from "../components/Editor/LexicalEditor";
 import { useToastStore } from "../utils/useToast";
 import "../stylesheets/exprimezvous.css";
-
-interface Tag {
-  id: number;
-  name: string;
-}
-
-interface NewPostPayload {
-  title: string;
-  hook: string;
-  content: string;
-  tagIds: number[];
-}
+import type { NewPostPayload, Tag } from "../types/pages/PagesTypes";
 
 // --- Fonctions d'API ---
 const fetchTags = async (): Promise<Tag[]> => {

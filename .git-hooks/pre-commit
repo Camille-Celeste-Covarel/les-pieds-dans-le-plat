@@ -1,17 +1,22 @@
 #!/bin/sh
 
-# --- Validation du nom de la branche ---
-# Vérifie que la branche actuelle correspond à l'un des formats suivants :
-# - main, develop, staging, dev
-# - feature/nom-de-la-feature/0.0.0
-# - version/0.0.0
-echo "--- Checking branch name..."
+fileList=$(git diff --staged --name-only :^package-lock.json :^README.md :^client :^server)
 
-# MODIFIÉ : La regex est maintenant beaucoup plus stricte.
+echo '----- Checking Root...'
 
-npx validate-branch-name --regex '^(main|develop|staging|dev|feature\/[a-z0-9-]+\/\d+\.\d+\.\d+|version\/\d+\.\d+\.\d+)$'
+if [ ! -z "$fileList" ]
+then
+  echo "error: Unauthorized modifications\n"
 
-# --- Vérification de la qualité du code ---
-# Lance le linter, le formateur et le vérificateur de types sur les fichiers modifiés.
-echo "\n--- Checking code quality..."
+  echo "$fileList\n"
+
+  echo "use 'git restore --staged ...' to fix the problem"
+  echo "(and ask your instructor why you should not change these files)\n"
+
+  exit 1
+fi
+
+echo '----- Done!'
+
+npx validate-branch-name
 npm run check

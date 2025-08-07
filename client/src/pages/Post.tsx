@@ -9,27 +9,8 @@ import Modal from "../components/Modal/Modal";
 import { useAuth } from "../contexts/AuthContext";
 import { useOverlay } from "../contexts/OverlayContext/OverlayContext";
 import "../stylesheets/Post.css";
+import type { FullPost } from "../types/pages/PagesTypes";
 import { useToastStore } from "../utils/useToast";
-
-export interface FullPost {
-  id: string;
-  title: string;
-  hook: string | null;
-  content: string;
-  slug: string;
-  is_featured: boolean;
-  status: "pending_review" | "approved" | "rejected";
-  admin_context: string | null;
-  publishedAt: string | null;
-  author: {
-    public_name: string;
-    avatar_url: string | null;
-  };
-  tags: {
-    id: number;
-    name: string;
-  }[];
-}
 
 // La fonction de fetch qui appelle l'API
 const fetchPost = async (slug: string): Promise<FullPost> => {

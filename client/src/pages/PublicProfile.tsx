@@ -2,17 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { FaUserCircle } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
 import "../stylesheets/PublicProfile.css";
-
-interface PublicProfileData {
-  public_name: string;
-  avatar_url: string | null;
-  posts: {
-    title: string;
-    subtitle: string | null;
-    slug: string;
-    publishedAt: string;
-  }[];
-}
+import type { PublicProfileData } from "../types/pages/PagesTypes";
 
 const fetchPublicProfile = async (
   publicName: string,

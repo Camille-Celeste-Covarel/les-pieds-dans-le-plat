@@ -1,4 +1,3 @@
-import type React from "react";
 import { isMobile } from "react-device-detect";
 import { Outlet, useLocation } from "react-router-dom";
 import Footer from "./components/Footer/Footer";
@@ -9,15 +8,11 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { OverlayProvider } from "./contexts/OverlayContext/OverlayContext";
 import { overlayRoutes } from "./middlewares/overlays.tsx";
 import Post from "./pages/Post.tsx";
+import type { OverlayRoute } from "./types/contexts/contextsTypes.ts";
 
 import "./components/Overlay/Overlay.css";
 import "./stylesheets/App.css";
 import "./stylesheets/normalize.css";
-
-interface OverlayRoute {
-  component: React.ReactNode;
-  protection: "public" | "protected" | "admin";
-}
 
 function AppContent() {
   const location = useLocation();
